@@ -8,7 +8,7 @@ Installation
 
 Download and install [node and node package manager](http://nodejs.org/).
 
-'''
+```
 git clone git://github.com/cypressf/nightfall.git
 npm install
-''' 
+```
