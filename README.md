@@ -6,9 +6,16 @@ I'm attempting to make a game along the lines of [Spybotics: The Nightfall Incid
 Installation
 ------------
 
-Download and install [node and node package manager](http://nodejs.org/).
+Download and install [node and npm (node package manager)](http://nodejs.org/).
 
 ```
 git clone git://github.com/cypressf/nightfall.git
 npm install
 ```
+
+Running
+-------
+```
+npm start
+```
+Then visit http://localhost:5000
