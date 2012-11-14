@@ -1,8 +1,30 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+#game table{
+    empty-cells: show;
+    border-collapse: collapse;
+    table-layout:fixed;
+}
+#game table td {
+    height:30px;
+    width:30px;
+    border:1px solid;
+    overflow:hidden;
 }
 
-a {
-  color: #00B7FF;
+#game table td .name {
+    display:none;
+    position:absolute;
+}
+
+#game table td:hover {
+    background:#7e8698!important;
+    cursor:default;
+}
+
+#game table td:hover .name {
+    display:block;
+    position:absolute;
+    background:#d2e1ff;
+    border:1px solid #acb8d1;
+    padding:0.3em;
+    border-radius:0.4em;
 }
