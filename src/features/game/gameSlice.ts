@@ -27,4 +27,6 @@ export const gameSlice = createSlice({
     },
 });
 
+export const { moveUnit } = gameSlice.actions;
+
 export default gameSlice.reducer;
