@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux"
 import { RootState } from "../../app/store";
-import { Unit } from "./gameSlice";
+import { Unit } from "../unit/Unit";
 import styles from './Game.module.css';
 import { GridCell } from "./GridCell";
 

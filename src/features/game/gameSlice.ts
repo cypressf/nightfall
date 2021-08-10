@@ -1,13 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-export interface Position {
-    x: number;
-    y: number;
-}
-
-export interface Unit {
-    position: Position;
-};
+import {Unit} from "../unit/Unit";
+import {Position} from "./Position";
 
 export interface GameState {
     unit: Unit;
@@ -15,7 +8,17 @@ export interface GameState {
 };
 
 const initialState: GameState = {
-    unit: { position: { x: 0, y: 0 } },
+    unit: {
+      position: { x: 0, y: 0 },
+      length:1,
+      stats:{
+        name:"Test",
+        maxLength:1,
+        range:1,
+        movement:1,
+        attack:1,
+      }
+    },
     gridSize: { width: 5, height: 5 },
 };
 

@@ -1,6 +1,8 @@
-import { moveUnit, Position } from "./gameSlice";
+import { moveUnit } from "./gameSlice";
 import styles from './Game.module.css';
 import { useAppDispatch } from "../../app/hooks";
+import {Position} from "./Position";
+
 
 type Props = {
     position: Position,
