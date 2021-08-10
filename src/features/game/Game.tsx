@@ -6,8 +6,17 @@ import styles from './Game.module.css';
 import { GridCell } from "./GridCell";
 
 const unitIsAt = (unit: Unit, i: number) => {
-    const sum = unit.position.y + unit.position.x * 5;
-    return sum === i;
+    for (const position of unit.positions) {
+        if (position.y + position.x * 5 === i) {
+            return true;
+        }
+    }
+    return false;
+}
+
+const unitHeadIsAt = (unit: Unit, i: number) => {
+    const head = unit.positions[unit.positions.length - 1];
+    return head.y + head.x * 5 === i;
 }
 
 const positionOfGrid = (i: number) => {
@@ -19,7 +28,7 @@ const positionOfGrid = (i: number) => {
 const grid = (gridSize: { height: number, width: number }, unit: Unit) =>
     [...Array(gridSize.height * gridSize.width).keys()]
         .map(i =>
-            <GridCell active={unitIsAt(unit, i)} position={positionOfGrid(i)} />
+            <GridCell isHead={unitHeadIsAt(unit, i)} isActive={unitIsAt(unit, i)} position={positionOfGrid(i)} />
         );
 
 export function Game() {

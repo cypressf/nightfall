@@ -9,11 +9,11 @@ export interface GameState {
 
 const initialState: GameState = {
     unit: {
-      position: { x: 0, y: 0 },
+      positions: [{ x: 0, y: 0 }],
       length:1,
       stats:{
         name:"Test",
-        maxLength:1,
+        maxLength:3,
         range:1,
         movement:1,
         attack:1,
@@ -22,17 +22,34 @@ const initialState: GameState = {
     gridSize: { width: 5, height: 5 },
 };
 
-const locationValid = (oldPosition: Position, newPosition: Position) =>
-    Math.abs(newPosition.x - oldPosition.x) <= 1 &&
-    Math.abs(newPosition.y - oldPosition.y) <= 1;
+const overlapsAnything = (positions: Position[], newPosition: Position) => {
+    for (const position of positions) {
+        if (position.x === newPosition.x && position.y === newPosition.y) {
+            return true;
+        }
+    }
+    return false;
+}
+
+const locationValid = (unit: Unit, newPosition: Position) => {
+    const oldPositions = unit.positions;
+    const oldHead = oldPositions[oldPositions.length - 1];
+    return Math.abs(newPosition.x - oldHead.x) <= 1 &&
+        Math.abs(newPosition.y - oldHead.y) <= 1 &&
+        !overlapsAnything(oldPositions, newPosition);
+}
+
 
 export const gameSlice = createSlice({
     name: 'game',
     initialState,
     reducers: {
         moveUnit: (state: GameState, action: PayloadAction<Position>) => {
-            if (locationValid(state.unit.position, action.payload)) {
-                state.unit.position = action.payload;
+            if (locationValid(state.unit, action.payload)) {
+                state.unit.positions.push(action.payload);
+            }
+            if (state.unit.positions.length > state.unit.stats.maxLength) {
+                state.unit.positions.shift();
             }
         },
     },

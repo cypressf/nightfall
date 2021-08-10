@@ -9,5 +9,5 @@ export interface Unit {
       name: string;
     }
     length: number;
-    position: Position;
+    positions: Position[];
 };

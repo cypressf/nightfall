@@ -12,3 +12,7 @@
 .wrapper>.active {
     background-color: yellow;
 }
+
+.wrapper>.active.head {
+    background-color: rgb(255, 196, 0);
+}
