@@ -6,8 +6,12 @@ import styles from './Game.module.css';
 import { GridCell } from "./GridCell";
 
 const unitIsAt = (unit: Unit, i: number) => {
-    const sum = unit.position.y + unit.position.x * 5;
-    return sum === i;
+    for (const position of unit.positions) {
+        if (position.y + position.x * 5 === i) {
+            return true;
+        }
+    }
+    return false;
 }
 
 const positionOfGrid = (i: number) => {
