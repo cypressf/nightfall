@@ -14,6 +14,11 @@ const unitIsAt = (unit: Unit, i: number) => {
     return false;
 }
 
+const unitHeadIsAt = (unit: Unit, i: number) => {
+    const head = unit.positions[unit.positions.length - 1];
+    return head.y + head.x * 5 === i;
+}
+
 const positionOfGrid = (i: number) => {
     const x = Math.floor(i / 5);
     const y = i % 5;
@@ -23,7 +28,7 @@ const positionOfGrid = (i: number) => {
 const grid = (gridSize: { height: number, width: number }, unit: Unit) =>
     [...Array(gridSize.height * gridSize.width).keys()]
         .map(i =>
-            <GridCell active={unitIsAt(unit, i)} position={positionOfGrid(i)} />
+            <GridCell isHead={unitHeadIsAt(unit, i)} isActive={unitIsAt(unit, i)} position={positionOfGrid(i)} />
         );
 
 export function Game() {

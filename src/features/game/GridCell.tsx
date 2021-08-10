@@ -4,14 +4,26 @@ import { useAppDispatch } from "../../app/hooks";
 
 type Props = {
     position: Position,
-    active: boolean,
+    isActive: boolean,
+    isHead: boolean,
 };
 
-export const GridCell = ({ position, active }: Props) => {
+const getClass = (isActive: boolean, isHead: boolean) => {
+    const classes = [];
+    if (isActive) {
+        classes.push(styles.active);
+    }
+    if (isHead) {
+        classes.push(styles.head);
+    }
+    return classes;
+}
+
+export const GridCell = ({ position, isActive, isHead }: Props) => {
     const dispatch = useAppDispatch();
     return <div
         key={position.x + "," + position.y}
-        className={active ? styles.active : undefined}
+        className={getClass(isActive, isHead).join(" ")}
         onClick={() => dispatch(moveUnit(position))}
     >{position.x + " " + position.y}</div>;
 }
