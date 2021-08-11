@@ -103,7 +103,7 @@ export const gameSlice = createSlice({
             if (unit.movesUsed >= unit.stats.movement) {
                 return;
             }
-            if (locationValid(Object.values(state.units), unit, action.payload)) {
+            if (locationValid(getUnitList(state), unit, action.payload)) {
                 unit.positions.push(action.payload);
                 unit.movesUsed++;
             }
@@ -112,7 +112,7 @@ export const gameSlice = createSlice({
             }
         },
         select: (state: GameState, action: PayloadAction<Position>) => {
-            const unit = unitAt(action.payload, Object.values(state.units));
+            const unit = unitAt(action.payload, getUnitList(state));
             if (unit) {
                 state.phase = "action";
                 state.selectedUnit = unit.stats.id;
@@ -123,7 +123,7 @@ export const gameSlice = createSlice({
         },
         attack: (state: GameState, action: PayloadAction<Position>) => {
             const targetPosition = action.payload;
-            const target = unitAt(targetPosition, Object.values(state.units));
+            const target = unitAt(targetPosition, getUnitList(state));
             if (state.phase !== "action" || state.selectedUnit === undefined || !target) {
                 return;
             }
@@ -139,7 +139,7 @@ export const gameSlice = createSlice({
         },
         endTurn: (state: GameState) => {
             state.turn++;
-            for (const unit of Object.values(state.units)) {
+            for (const unit of getUnitList(state)) {
                 unit.movesUsed = 0;
                 unit.attackUsed = false;
             };
@@ -148,5 +148,10 @@ export const gameSlice = createSlice({
 });
 
 export const { move, select, attack, reset, endTurn } = gameSlice.actions;
+
+export const getSelectedUnit = (state: GameState) =>
+    state.selectedUnit ? state.units[state.selectedUnit] : undefined;
+
+export const getUnitList = (state: GameState) => Object.values(state.units);
 
 export default gameSlice.reducer;
