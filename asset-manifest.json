@@ -1,20 +1,20 @@
 {
   "files": {
     "main.css": "/nightfall/static/css/main.c897b796.chunk.css",
-    "main.js": "/nightfall/static/js/main.bba82f9f.chunk.js",
-    "main.js.map": "/nightfall/static/js/main.bba82f9f.chunk.js.map",
+    "main.js": "/nightfall/static/js/main.cc22e962.chunk.js",
+    "main.js.map": "/nightfall/static/js/main.cc22e962.chunk.js.map",
     "runtime-main.js": "/nightfall/static/js/runtime-main.76daff7c.js",
     "runtime-main.js.map": "/nightfall/static/js/runtime-main.76daff7c.js.map",
-    "static/js/2.ca325d07.chunk.js": "/nightfall/static/js/2.ca325d07.chunk.js",
-    "static/js/2.ca325d07.chunk.js.map": "/nightfall/static/js/2.ca325d07.chunk.js.map",
+    "static/js/2.e96c7661.chunk.js": "/nightfall/static/js/2.e96c7661.chunk.js",
+    "static/js/2.e96c7661.chunk.js.map": "/nightfall/static/js/2.e96c7661.chunk.js.map",
     "index.html": "/nightfall/index.html",
     "static/css/main.c897b796.chunk.css.map": "/nightfall/static/css/main.c897b796.chunk.css.map",
-    "static/js/2.ca325d07.chunk.js.LICENSE.txt": "/nightfall/static/js/2.ca325d07.chunk.js.LICENSE.txt"
+    "static/js/2.e96c7661.chunk.js.LICENSE.txt": "/nightfall/static/js/2.e96c7661.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.76daff7c.js",
-    "static/js/2.ca325d07.chunk.js",
+    "static/js/2.e96c7661.chunk.js",
     "static/css/main.c897b796.chunk.css",
-    "static/js/main.bba82f9f.chunk.js"
+    "static/js/main.cc22e962.chunk.js"
   ]
 }
