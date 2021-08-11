@@ -73,8 +73,8 @@ const locationValid = (units: Unit[], unit: Unit, newPosition: Position) => {
         !overlapsAnything(units, newPosition);
 }
 
-const unitAt = (position: Position, state: GameState) => {
-    for (const unit of Object.values(state.units)) {
+export const unitAt = (position: Position, units: Unit[]) => {
+    for (const unit of units) {
         if (overlaps(unit.positions, position)) {
             return unit;
         }
@@ -104,10 +104,7 @@ export const gameSlice = createSlice({
             }
         },
         selectUnit: (state: GameState, action: PayloadAction<Position>) => {
-            if (state.phase !== "select") {
-                return;
-            }
-            const unit = unitAt(action.payload, state);
+            const unit = unitAt(action.payload, Object.values(state.units));
             if (unit) {
                 state.phase = "action";
                 state.selectedUnit = unit.stats.id;
@@ -119,7 +116,7 @@ export const gameSlice = createSlice({
         },
         attack: (state: GameState, action: PayloadAction<Position>) => {
             const targetPosition = action.payload;
-            const target = unitAt(targetPosition, state);
+            const target = unitAt(targetPosition, Object.values(state.units));
             if (state.phase !== "action" || state.selectedUnit === undefined || !target) {
                 return;
             }

@@ -1,8 +1,9 @@
-import { attack, moveUnit, selectUnit } from "./gameSlice";
+import { attack, moveUnit, selectUnit, unitAt } from "./gameSlice";
 import { useAppDispatch } from "../../app/hooks";
 import { Position } from "./Position";
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
+import Unit from "../unit/Unit";
 
 
 type Props = {
@@ -10,24 +11,25 @@ type Props = {
     color?: string,
 };
 
+const isEmpty = (position: Position, units: Unit[]) => unitAt(position, units) === undefined;
+
 export const GridCell = ({ position, color }: Props) => {
     const dispatch = useAppDispatch();
-    const { phase } = useSelector((state: RootState) => state.game);
+    const { units } = useSelector((state: RootState) => state.game);
     const handleClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        switch (phase) {
-            case "action":
-                switch (event.button) {
-                    case 0:
-                        dispatch(moveUnit(position)); break;
-                    case 2:
-                        dispatch(attack(position));
-                        event.preventDefault();
-                        break;
+        switch (event.button) {
+            case 0:
+                if (isEmpty(position, Object.values(units))) {
+                    dispatch(moveUnit(position)); break;
+                } else {
+                    dispatch(selectUnit(position)); break;
+                }
+            case 2:
+                dispatch(attack(position));
+                event.preventDefault();
+                break;
 
-                }; break;
-            case "select":
-                dispatch(selectUnit(position)); break;
-        }
+        };
     }
     return <div
         style={{ backgroundColor: color }}
