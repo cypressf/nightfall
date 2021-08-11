@@ -40,26 +40,35 @@ const initialState: GameState = {
     }],
 };
 
-const overlapsAnything = (positions: Position[], newPosition: Position) => {
-    for (const position of positions) {
-        if (position.x === newPosition.x && position.y === newPosition.y) {
+const overlapsAnything = (units: Unit[], newPosition: Position) => {
+    for (const unit of units) {
+        if (overlaps(unit.positions, newPosition)) {
             return true;
         }
     }
     return false;
 }
 
-const locationValid = (unit: Unit, newPosition: Position) => {
+const overlaps = (positions: Position[], position: Position) => {
+    for (const existingPosition of positions) {
+        if (existingPosition.x === position.x && existingPosition.y === position.y) {
+            return true;
+        }
+    }
+    return false;
+}
+
+const locationValid = (units: Unit[], unit: Unit, newPosition: Position) => {
     const oldPositions = unit.positions;
     const oldHead = oldPositions[oldPositions.length - 1];
-    return Math.abs(newPosition.x - oldHead.x) <= 1 &&
+    return Math.abs(newPosition.x - oldHead.x) +
         Math.abs(newPosition.y - oldHead.y) <= 1 &&
-        !overlapsAnything(oldPositions, newPosition);
+        !overlapsAnything(units, newPosition);
 }
 
 const unitAt = (position: Position, state: GameState) => {
     for (const unit of state.units) {
-        if (overlapsAnything(unit.positions, position)) {
+        if (overlaps(unit.positions, position)) {
             return unit;
         }
     }
@@ -75,7 +84,7 @@ export const gameSlice = createSlice({
                 return;
             }
             const unit = state.units[state.selectedUnit];
-            if (locationValid(unit, action.payload)) {
+            if (locationValid(state.units, unit, action.payload)) {
                 unit.positions.push(action.payload);
             }
             if (unit.positions.length > unit.stats.maxLength) {
