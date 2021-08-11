@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Unit } from "../unit/Unit";
+import Unit from "../unit/Unit";
 import { Position } from "./Position";
 
 export interface GameState {
@@ -11,18 +11,33 @@ export interface GameState {
 
 const initialState: GameState = {
     phase: "select",
+    gridSize: { width: 5, height: 5 },
     units: [{
         positions: [{ x: 0, y: 0 }],
         length: 1,
         stats: {
-            name: "Test",
+            name: "Red",
             maxLength: 3,
             range: 1,
             movement: 1,
             attack: 1,
+            color: "red",
+            headColor: "brown",
+        }
+    },
+    {
+        positions: [{ x: 4, y: 4 }],
+        length: 1,
+        stats: {
+            name: "Yellow",
+            maxLength: 3,
+            range: 1,
+            movement: 1,
+            attack: 1,
+            color: "yellow",
+            headColor: "green",
         }
     }],
-    gridSize: { width: 5, height: 5 },
 };
 
 const overlapsAnything = (positions: Position[], newPosition: Position) => {
