@@ -1,6 +1,6 @@
 .wrapper {
     display: grid;
-    grid: repeat(5, 60px) / auto-flow 60px;
+    grid: repeat(10, 60px) / auto-flow 60px;
 }
 
 .wrapper>div {

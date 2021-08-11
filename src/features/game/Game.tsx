@@ -19,9 +19,9 @@ const getColor = (position: Position, units: Unit[]) => {
     }
 }
 
-const positionOfGrid = (i: number) => {
-    const x = Math.floor(i / 5);
-    const y = i % 5;
+const positionOfGrid = (i: number, gridSize: { height: number, width: number }) => {
+    const x = Math.floor(i / gridSize.width);
+    const y = i % gridSize.height;
     return { x, y };
 }
 
@@ -30,8 +30,8 @@ const grid = (gridSize: { height: number, width: number }, units: Unit[]) =>
         .map(i =>
             <GridCell
                 key={i}
-                color={getColor(positionOfGrid(i), units)}
-                position={positionOfGrid(i)} />
+                color={getColor(positionOfGrid(i, gridSize), units)}
+                position={positionOfGrid(i, gridSize)} />
         );
 
 export function Game() {

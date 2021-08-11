@@ -11,7 +11,7 @@ export interface GameState {
 
 const initialState: GameState = {
     phase: "select",
-    gridSize: { width: 5, height: 5 },
+    gridSize: { width: 10, height: 10 },
     units: [{
         positions: [{ x: 0, y: 0 }],
         length: 1,
