@@ -1,22 +1,31 @@
 import React from "react";
 import { useSelector } from "react-redux"
+import { useAppDispatch } from "../../app/hooks";
 import { RootState } from "../../app/store";
 import { Unit } from "../unit/Unit";
 import styles from './Game.module.css';
+import { cancel } from "./gameSlice";
 import { GridCell } from "./GridCell";
 
-const unitIsAt = (unit: Unit, i: number) => {
-    for (const position of unit.positions) {
-        if (position.y + position.x * 5 === i) {
-            return true;
+const unitIsAt = (units: Unit[], i: number) => {
+    for (const unit of units) {
+        for (const position of unit.positions) {
+            if (position.y + position.x * 5 === i) {
+                return true;
+            }
         }
     }
     return false;
 }
 
-const unitHeadIsAt = (unit: Unit, i: number) => {
-    const head = unit.positions[unit.positions.length - 1];
-    return head.y + head.x * 5 === i;
+const unitHeadIsAt = (units: Unit[], i: number) => {
+    for (const unit of units) {
+        const head = unit.positions[unit.positions.length - 1];
+        if (head.y + head.x * 5 === i) {
+            return true;
+        }
+    }
+    return false;
 }
 
 const positionOfGrid = (i: number) => {
@@ -25,19 +34,22 @@ const positionOfGrid = (i: number) => {
     return { x, y };
 }
 
-const grid = (gridSize: { height: number, width: number }, unit: Unit) =>
+const grid = (gridSize: { height: number, width: number }, units: Unit[]) =>
     [...Array(gridSize.height * gridSize.width).keys()]
         .map(i =>
-            <GridCell isHead={unitHeadIsAt(unit, i)} isActive={unitIsAt(unit, i)} position={positionOfGrid(i)} />
+            <GridCell key={i} isHead={unitHeadIsAt(units, i)} isActive={unitIsAt(units, i)} position={positionOfGrid(i)} />
         );
 
 export function Game() {
-    const { unit, gridSize } = useSelector((state: RootState) => state.game);
+    const dispatch = useAppDispatch();
+    const { units, gridSize, phase } = useSelector((state: RootState) => state.game);
     return (
         <React.Fragment>
+            <p>{phase}</p>
             <div className={styles.wrapper}>
-                {grid(gridSize, unit)}
+                {grid(gridSize, units)}
             </div>
+            <button onClick={() => dispatch(cancel())}>cancel</button>
         </React.Fragment>
     );
 }

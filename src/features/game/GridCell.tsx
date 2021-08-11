@@ -1,7 +1,9 @@
-import { moveUnit } from "./gameSlice";
+import { moveUnit, selectUnit } from "./gameSlice";
 import styles from './Game.module.css';
 import { useAppDispatch } from "../../app/hooks";
-import {Position} from "./Position";
+import { Position } from "./Position";
+import { useSelector } from "react-redux";
+import { RootState } from "../../app/store";
 
 
 type Props = {
@@ -23,9 +25,20 @@ const getClass = (isActive: boolean, isHead: boolean) => {
 
 export const GridCell = ({ position, isActive, isHead }: Props) => {
     const dispatch = useAppDispatch();
+    const { phase } = useSelector((state: RootState) => state.game);
+
     return <div
-        key={position.x + "," + position.y}
         className={getClass(isActive, isHead).join(" ")}
-        onClick={() => dispatch(moveUnit(position))}
+        onClick={() => {
+            switch (phase) {
+                case "action":
+                    dispatch(moveUnit(position));
+                    break;
+                case "select":
+                    dispatch(selectUnit(position));
+                    break;
+            }
+
+        }}
     >{position.x + " " + position.y}</div>;
 }
