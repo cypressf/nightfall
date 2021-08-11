@@ -1,4 +1,4 @@
-import { attack, moveUnit, selectUnit, unitAt } from "./gameSlice";
+import { attack, move, select, unitAt } from "./gameSlice";
 import { useAppDispatch } from "../../app/hooks";
 import { Position } from "./Position";
 import { useSelector } from "react-redux";
@@ -20,9 +20,9 @@ export const GridCell = ({ position, color }: Props) => {
         switch (event.button) {
             case 0:
                 if (isEmpty(position, Object.values(units))) {
-                    dispatch(moveUnit(position)); break;
+                    dispatch(move(position)); break;
                 } else {
-                    dispatch(selectUnit(position)); break;
+                    dispatch(select(position)); break;
                 }
             case 2:
                 dispatch(attack(position));

@@ -4,7 +4,7 @@ import { useAppDispatch } from "../../app/hooks";
 import { RootState } from "../../app/store";
 import Unit from "../unit/Unit";
 import styles from './Game.module.css';
-import { cancel } from "./gameSlice";
+import { endTurn, reset } from "./gameSlice";
 import { GridCell } from "./GridCell";
 import { Position } from "./Position";
 
@@ -36,14 +36,15 @@ const grid = (gridSize: { height: number, width: number }, units: Unit[]) =>
 
 export function Game() {
     const dispatch = useAppDispatch();
-    const { units, gridSize, phase, selectedUnit } = useSelector((state: RootState) => state.game);
+    const { units, gridSize, phase, selectedUnit, turn } = useSelector((state: RootState) => state.game);
     return (
         <React.Fragment>
+            <p>Turn {turn + 1}</p> <button onClick={() => dispatch(endTurn())}>End Turn</button>
             <p>{phase}{selectedUnit !== undefined ? ": " + units[selectedUnit].stats.name : ""}</p>
             <div className={styles.wrapper}>
                 {grid(gridSize, Object.values(units))}
             </div>
-            <button onClick={() => dispatch(cancel())}>cancel</button>
+            <button onClick={() => dispatch(reset())}>reset</button>
         </React.Fragment>
     );
 }

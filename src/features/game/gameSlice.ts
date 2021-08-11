@@ -3,15 +3,17 @@ import Unit from "../unit/Unit";
 import { Position } from "./Position";
 
 export interface GameState {
+    turn: number;
     units: { [key: string]: Unit };
     selectedUnit?: string;
-    phase: "select" | "action";
+    phase: "action";
     gridSize: { width: number, height: number };
 };
 
-const defaultUnits = [{
+const defaultUnits: Unit[] = [{
     positions: [{ x: 0, y: 0 }],
-    length: 1,
+    movesUsed: 0,
+    attackUsed: false,
     stats: {
         name: "Red",
         maxLength: 3,
@@ -25,7 +27,8 @@ const defaultUnits = [{
 },
 {
     positions: [{ x: 4, y: 4 }],
-    length: 1,
+    movesUsed: 0,
+    attackUsed: false,
     stats: {
         name: "Yellow",
         maxLength: 3,
@@ -39,7 +42,8 @@ const defaultUnits = [{
 }];
 
 const initialState: GameState = {
-    phase: "select",
+    turn: 0,
+    phase: "action",
     gridSize: { width: 10, height: 10 },
     units: defaultUnits.reduce((map: { [key: string]: Unit }, unit) => {
         map[unit.stats.id] = unit;
@@ -91,28 +95,31 @@ export const gameSlice = createSlice({
     name: 'game',
     initialState,
     reducers: {
-        moveUnit: (state: GameState, action: PayloadAction<Position>) => {
+        move: (state: GameState, action: PayloadAction<Position>) => {
             if (state.phase !== "action" || state.selectedUnit === undefined) {
                 return;
             }
             const unit = state.units[state.selectedUnit];
+            if (unit.movesUsed >= unit.stats.movement) {
+                return;
+            }
             if (locationValid(Object.values(state.units), unit, action.payload)) {
                 unit.positions.push(action.payload);
+                unit.movesUsed++;
             }
             if (unit.positions.length > unit.stats.maxLength) {
                 unit.positions.shift();
             }
         },
-        selectUnit: (state: GameState, action: PayloadAction<Position>) => {
+        select: (state: GameState, action: PayloadAction<Position>) => {
             const unit = unitAt(action.payload, Object.values(state.units));
             if (unit) {
                 state.phase = "action";
                 state.selectedUnit = unit.stats.id;
             }
         },
-        cancel: (state: GameState) => {
-            state.selectedUnit = undefined;
-            state.phase = "select";
+        reset: () => {
+            return initialState;
         },
         attack: (state: GameState, action: PayloadAction<Position>) => {
             const targetPosition = action.payload;
@@ -121,20 +128,25 @@ export const gameSlice = createSlice({
                 return;
             }
             const unit = state.units[state.selectedUnit];
-            if (unit === target) {
-                return; // stop hitting yourself!
-            }
-            if (!isInRange(unit, targetPosition)) {
+            if (unit === target || unit.attackUsed || !isInRange(unit, targetPosition)) {
                 return;
             }
+            unit.attackUsed = true;
             if (unit.stats.attack >= target.positions.length) {
                 delete state.units[target.stats.id];
             }
             target.positions.splice(0, unit.stats.attack);
-        }
+        },
+        endTurn: (state: GameState) => {
+            state.turn++;
+            for (const unit of Object.values(state.units)) {
+                unit.movesUsed = 0;
+                unit.attackUsed = false;
+            };
+        },
     },
 });
 
-export const { moveUnit, selectUnit, cancel, attack } = gameSlice.actions;
+export const { move, select, attack, reset, endTurn } = gameSlice.actions;
 
 export default gameSlice.reducer;
