@@ -35,5 +35,5 @@ export const GridCell = ({ position, color }: Props) => {
         style={{ backgroundColor: color }}
         onContextMenu={handleClick}
         onClick={handleClick}
-    >{position.x + " " + position.y}</div>;
+    ></div>;
 }
