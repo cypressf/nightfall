@@ -16,10 +16,10 @@ const defaultUnits: Unit[] = [{
     attackUsed: false,
     stats: {
         name: "Red",
-        maxLength: 3,
+        maxLength: 5,
         range: 1,
-        movement: 1,
-        attack: 1,
+        movement: 2,
+        attack: 3,
         color: "red",
         headColor: "brown",
         id: "a",
@@ -31,13 +31,28 @@ const defaultUnits: Unit[] = [{
     attackUsed: false,
     stats: {
         name: "Yellow",
-        maxLength: 3,
-        range: 1,
+        maxLength: 2,
+        range: 3,
         movement: 1,
         attack: 1,
         color: "yellow",
         headColor: "green",
         id: "b",
+    }
+},
+{
+    positions: [{ x: 9, y: 9 }],
+    movesUsed: 0,
+    attackUsed: false,
+    stats: {
+        name: "Purple",
+        maxLength: 1,
+        range: 1,
+        movement: 5,
+        attack: 2,
+        color: "purple",
+        headColor: "pink",
+        id: "p",
     }
 }];
 
