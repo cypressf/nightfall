@@ -4,7 +4,7 @@ import { useAppDispatch } from "../../app/hooks";
 import { RootState } from "../../app/store";
 import Unit from "../unit/Unit";
 import styles from './Game.module.css';
-import { cancel } from "./gameSlice";
+import { endTurn, reset, getUnitList, getSelectedUnit } from "./gameSlice";
 import { GridCell } from "./GridCell";
 import { Position } from "./Position";
 
@@ -25,25 +25,41 @@ const positionOfGrid = (i: number, gridSize: { height: number, width: number }) 
     return { x, y };
 }
 
-const grid = (gridSize: { height: number, width: number }, units: Unit[]) =>
+const isSelected = (position: Position, selectedUnit: Unit | undefined) => {
+    if (!selectedUnit) {
+        return false;
+    }
+    return selectedUnit.positions.some(
+        unitPosition => unitPosition.x === position.x && unitPosition.y === position.y
+    );
+}
+
+const grid = (gridSize: { height: number, width: number }, units: Unit[], selectedUnit: Unit | undefined) =>
     [...Array(gridSize.height * gridSize.width).keys()]
         .map(i =>
             <GridCell
                 key={i}
                 color={getColor(positionOfGrid(i, gridSize), units)}
+                selected={isSelected(positionOfGrid(i, gridSize), selectedUnit)}
                 position={positionOfGrid(i, gridSize)} />
         );
 
 export function Game() {
     const dispatch = useAppDispatch();
-    const { units, gridSize, phase, selectedUnit } = useSelector((state: RootState) => state.game);
+    const { gridSize, phase, selectedUnit, turn, units } =
+        useSelector((state: RootState) => ({
+            ...state.game,
+            units: getUnitList(state.game),
+            selectedUnit: getSelectedUnit(state.game),
+        }));
     return (
         <React.Fragment>
-            <p>{phase}{selectedUnit !== undefined ? ": " + units[selectedUnit].stats.name : ""}</p>
+            <p>Turn {turn + 1}</p> <button onClick={() => dispatch(endTurn())}>End Turn</button>
+            <p>{phase}{selectedUnit !== undefined ? ": " + selectedUnit.stats.name : ""}</p>
             <div className={styles.wrapper}>
-                {grid(gridSize, units)}
+                {grid(gridSize, units, selectedUnit)}
             </div>
-            <button onClick={() => dispatch(cancel())}>cancel</button>
+            <button onClick={() => dispatch(reset())}>reset</button>
         </React.Fragment>
     );
 }

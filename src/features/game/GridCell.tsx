@@ -1,31 +1,42 @@
-import { moveUnit, selectUnit } from "./gameSlice";
+import { attack, move, select, unitAt, getUnitList } from "./gameSlice";
 import { useAppDispatch } from "../../app/hooks";
 import { Position } from "./Position";
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
+import Unit from "../unit/Unit";
+import styles from './Game.module.css';
 
 
 type Props = {
     position: Position,
     color?: string,
+    selected: boolean,
 };
 
-export const GridCell = ({ position, color }: Props) => {
-    const dispatch = useAppDispatch();
-    const { phase } = useSelector((state: RootState) => state.game);
+const isEmpty = (position: Position, units: Unit[]) => unitAt(position, units) === undefined;
 
+export const GridCell = ({ position, color, selected }: Props) => {
+    const dispatch = useAppDispatch();
+    const units = useSelector((state: RootState) => getUnitList(state.game));
+    const handleClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        switch (event.button) {
+            case 0:
+                if (isEmpty(position, units)) {
+                    dispatch(move(position)); break;
+                } else {
+                    dispatch(select(position)); break;
+                }
+            case 2:
+                dispatch(attack(position));
+                event.preventDefault();
+                break;
+
+        };
+    }
     return <div
         style={{ backgroundColor: color }}
-        onClick={() => {
-            switch (phase) {
-                case "action":
-                    dispatch(moveUnit(position));
-                    break;
-                case "select":
-                    dispatch(selectUnit(position));
-                    break;
-            }
-
-        }}
-    >{position.x + " " + position.y}</div>;
+        className={selected ? styles.selected : undefined}
+        onContextMenu={handleClick}
+        onClick={handleClick}
+    ></div>;
 }

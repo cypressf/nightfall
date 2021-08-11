@@ -9,7 +9,9 @@ export default interface Unit {
     name: string;
     color: string;
     headColor: string;
+    id: string;
   }
-  length: number;
   positions: Position[];
+  movesUsed: number;
+  attackUsed: boolean;
 };
