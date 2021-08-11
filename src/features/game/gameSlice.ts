@@ -3,41 +3,48 @@ import Unit from "../unit/Unit";
 import { Position } from "./Position";
 
 export interface GameState {
-    units: Unit[];
-    selectedUnit?: number;
+    units: { [key: string]: Unit };
+    selectedUnit?: string;
     phase: "select" | "action";
     gridSize: { width: number, height: number };
 };
 
+const defaultUnits = [{
+    positions: [{ x: 0, y: 0 }],
+    length: 1,
+    stats: {
+        name: "Red",
+        maxLength: 3,
+        range: 1,
+        movement: 1,
+        attack: 1,
+        color: "red",
+        headColor: "brown",
+        id: "a",
+    }
+},
+{
+    positions: [{ x: 4, y: 4 }],
+    length: 1,
+    stats: {
+        name: "Yellow",
+        maxLength: 3,
+        range: 1,
+        movement: 1,
+        attack: 1,
+        color: "yellow",
+        headColor: "green",
+        id: "b",
+    }
+}];
+
 const initialState: GameState = {
     phase: "select",
     gridSize: { width: 10, height: 10 },
-    units: [{
-        positions: [{ x: 0, y: 0 }],
-        length: 1,
-        stats: {
-            name: "Red",
-            maxLength: 3,
-            range: 1,
-            movement: 1,
-            attack: 1,
-            color: "red",
-            headColor: "brown",
-        }
-    },
-    {
-        positions: [{ x: 4, y: 4 }],
-        length: 1,
-        stats: {
-            name: "Yellow",
-            maxLength: 3,
-            range: 1,
-            movement: 1,
-            attack: 1,
-            color: "yellow",
-            headColor: "green",
-        }
-    }],
+    units: defaultUnits.reduce((map: { [key: string]: Unit }, unit) => {
+        map[unit.stats.id] = unit;
+        return map;
+    }, {}),
 };
 
 const overlapsAnything = (units: Unit[], newPosition: Position) => {
@@ -67,11 +74,16 @@ const locationValid = (units: Unit[], unit: Unit, newPosition: Position) => {
 }
 
 const unitAt = (position: Position, state: GameState) => {
-    for (const unit of state.units) {
+    for (const unit of Object.values(state.units)) {
         if (overlaps(unit.positions, position)) {
             return unit;
         }
     }
+}
+
+const isInRange = (unit: Unit, target: Position) => {
+    const head = unit.positions[unit.positions.length - 1];
+    return Math.abs(head.x - target.x) + Math.abs(head.y - target.y) <= unit.stats.range;
 }
 
 
@@ -84,7 +96,7 @@ export const gameSlice = createSlice({
                 return;
             }
             const unit = state.units[state.selectedUnit];
-            if (locationValid(state.units, unit, action.payload)) {
+            if (locationValid(Object.values(state.units), unit, action.payload)) {
                 unit.positions.push(action.payload);
             }
             if (unit.positions.length > unit.stats.maxLength) {
@@ -98,17 +110,34 @@ export const gameSlice = createSlice({
             const unit = unitAt(action.payload, state);
             if (unit) {
                 state.phase = "action";
-                const unitIndex = state.units.indexOf(unit);
-                state.selectedUnit = unitIndex;
+                state.selectedUnit = unit.stats.id;
             }
         },
         cancel: (state: GameState) => {
             state.selectedUnit = undefined;
             state.phase = "select";
         },
+        attack: (state: GameState, action: PayloadAction<Position>) => {
+            const targetPosition = action.payload;
+            const target = unitAt(targetPosition, state);
+            if (state.phase !== "action" || state.selectedUnit === undefined || !target) {
+                return;
+            }
+            const unit = state.units[state.selectedUnit];
+            if (unit === target) {
+                return; // stop hitting yourself!
+            }
+            if (!isInRange(unit, targetPosition)) {
+                return;
+            }
+            if (unit.stats.attack >= target.positions.length) {
+                delete state.units[target.stats.id];
+            }
+            target.positions.splice(0, unit.stats.attack);
+        }
     },
 });
 
-export const { moveUnit, selectUnit, cancel } = gameSlice.actions;
+export const { moveUnit, selectUnit, cancel, attack } = gameSlice.actions;
 
 export default gameSlice.reducer;

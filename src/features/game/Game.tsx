@@ -41,7 +41,7 @@ export function Game() {
         <React.Fragment>
             <p>{phase}{selectedUnit !== undefined ? ": " + units[selectedUnit].stats.name : ""}</p>
             <div className={styles.wrapper}>
-                {grid(gridSize, units)}
+                {grid(gridSize, Object.values(units))}
             </div>
             <button onClick={() => dispatch(cancel())}>cancel</button>
         </React.Fragment>
