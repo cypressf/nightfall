@@ -66,7 +66,7 @@ const initialState: GameState = {
     }, {}),
 };
 
-const overlapsAnything = (units: Unit[], newPosition: Position) => {
+export const overlapsAnything = (units: Unit[], newPosition: Position) => {
     for (const unit of units) {
         if (overlaps(unit.positions, newPosition)) {
             return true;

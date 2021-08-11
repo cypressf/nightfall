@@ -7,6 +7,7 @@ import styles from './Game.module.css';
 import { endTurn, reset, getUnitList, getSelectedUnit } from "./gameSlice";
 import { GridCell } from "./GridCell";
 import { Position } from "./Position";
+import { bfs } from "../search/Brain";
 
 const getColor = (position: Position, units: Unit[]) => {
     for (const unit of units) {
@@ -60,6 +61,7 @@ export function Game() {
                 {grid(gridSize, units, selectedUnit)}
             </div>
             <button onClick={() => dispatch(reset())}>reset</button>
+            <button onClick={() => selectedUnit!==undefined ? console.log(bfs(selectedUnit,units,gridSize)):console.log(null)}> BFS </button>
         </React.Fragment>
     );
 }
