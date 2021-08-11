@@ -6,7 +6,7 @@ import Unit from "../unit/Unit";
 import styles from './Game.module.css';
 import { endTurn, reset, getUnitList, getSelectedUnit } from "./gameSlice";
 import { GridCell } from "./GridCell";
-import { Position } from "./Position";
+import { Position, posEquals } from "./Position";
 import { bfs } from "../search/Brain";
 
 const getColor = (position: Position, units: Unit[]) => {
@@ -35,15 +35,28 @@ const isSelected = (position: Position, selectedUnit: Unit | undefined) => {
     );
 }
 
-const grid = (gridSize: { height: number, width: number }, units: Unit[], selectedUnit: Unit | undefined) =>
-    [...Array(gridSize.height * gridSize.width).keys()]
-        .map(i =>
-            <GridCell
+const grid = (gridSize: { height: number, width: number }, units: Unit[], selectedUnit: Unit | undefined) =>{
+    //TODO: This is doing this each render call? hmmmm
+    const movableCells = selectedUnit===undefined ? [] : bfs(selectedUnit,units,gridSize);
+    return [...Array(gridSize.height * gridSize.width).keys()]
+        .map(i =>{
+          const cellPos=positionOfGrid(i, gridSize);
+          const isCellSelected = isSelected(positionOfGrid(i, gridSize), selectedUnit);
+          const isMovableCell = movableCells===undefined ? false : movableCells.some(pos => posEquals(pos,cellPos));
+          let glowColor = undefined;
+          //TODO: Refactor to some constants file
+          if (isCellSelected){
+            glowColor="#384bfa";
+          }else if (isMovableCell){
+            glowColor="#00ff00";
+          }
+          return  <GridCell
                 key={i}
-                color={getColor(positionOfGrid(i, gridSize), units)}
-                selected={isSelected(positionOfGrid(i, gridSize), selectedUnit)}
-                position={positionOfGrid(i, gridSize)} />
-        );
+                color={getColor(cellPos, units)}
+                glowColor={glowColor}
+                position={cellPos} />
+        });
+};
 
 export function Game() {
     const dispatch = useAppDispatch();

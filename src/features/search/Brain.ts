@@ -33,7 +33,7 @@ const isWithinRange=(attacker:Unit, defender:Unit)=>{
 }
 
 const inBounds=(positions:Position[], width:number, height:number)=>{
-  return positions.filter(pos=> pos.x>0 && pos.x<width && pos.y>0 && pos.y<height);
+  return positions.filter(pos=> pos.x>=0 && pos.x<width && pos.y>=0 && pos.y<height);
 }
 
 const empty = (positions:Position[], units:Unit[])=>{

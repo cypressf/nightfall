@@ -10,12 +10,12 @@ import styles from './Game.module.css';
 type Props = {
     position: Position,
     color?: string,
-    selected: boolean,
+    glowColor?: string,
 };
 
 const isEmpty = (position: Position, units: Unit[]) => unitAt(position, units) === undefined;
 
-export const GridCell = ({ position, color, selected }: Props) => {
+export const GridCell = ({ position, color, glowColor }: Props) => {
     const dispatch = useAppDispatch();
     const units = useSelector((state: RootState) => getUnitList(state.game));
     const handleClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -34,8 +34,10 @@ export const GridCell = ({ position, color, selected }: Props) => {
         };
     }
     return <div
-        style={{ backgroundColor: color }}
-        className={selected ? styles.selected : undefined}
+        style={{
+          backgroundColor: color ,
+          boxShadow: "0px 0px 10px" + glowColor,
+        }}
         onContextMenu={handleClick}
         onClick={handleClick}
     ></div>;
