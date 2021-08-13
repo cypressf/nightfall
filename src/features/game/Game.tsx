@@ -4,10 +4,9 @@ import { useAppDispatch } from "../../app/hooks";
 import { RootState } from "../../app/store";
 import Unit from "../unit/Unit";
 import styles from './Game.module.css';
-import { endTurn, reset, getUnitList, getSelectedUnit } from "./gameSlice";
+import { endTurn, reset, getUnitList, getSelectedUnit} from "./gameSlice";
 import { GridCell } from "./GridCell";
-import { Position, posEquals } from "./Position";
-import { bfs } from "../search/Brain";
+import { Position, posEquals, posHash } from "./Position";
 
 const getColor = (position: Position, units: Unit[]) => {
     for (const unit of units) {
@@ -35,21 +34,11 @@ const isSelected = (position: Position, selectedUnit: Unit | undefined) => {
     );
 }
 
-const grid = (gridSize: { height: number, width: number }, units: Unit[], selectedUnit: Unit | undefined) =>{
-    //TODO: This is doing this each render call? hmmmm
-    const movableCells = selectedUnit===undefined ? [] : bfs(selectedUnit,units,gridSize);
+const grid = (gridSize: { height: number, width: number }, units: Unit[], selectedUnit: Unit | undefined, gridGlows: { [key:string]: string | undefined }) =>{
     return [...Array(gridSize.height * gridSize.width).keys()]
         .map(i =>{
           const cellPos=positionOfGrid(i, gridSize);
-          const isCellSelected = isSelected(positionOfGrid(i, gridSize), selectedUnit);
-          const isMovableCell = movableCells===undefined ? false : movableCells.some(pos => posEquals(pos,cellPos));
-          let glowColor = undefined;
-          //TODO: Refactor to some constants file
-          if (isCellSelected){
-            glowColor="#384bfa";
-          }else if (isMovableCell){
-            glowColor="#00ff00";
-          }
+          let glowColor = gridGlows[posHash(cellPos)];
           return  <GridCell
                 key={i}
                 color={getColor(cellPos, units)}
@@ -60,7 +49,7 @@ const grid = (gridSize: { height: number, width: number }, units: Unit[], select
 
 export function Game() {
     const dispatch = useAppDispatch();
-    const { gridSize, phase, selectedUnit, turn, units } =
+    const { gridSize, phase, selectedUnit, turn, units, gridGlows } =
         useSelector((state: RootState) => ({
             ...state.game,
             units: getUnitList(state.game),
@@ -71,10 +60,9 @@ export function Game() {
             <p>Turn {turn + 1}</p> <button onClick={() => dispatch(endTurn())}>End Turn</button>
             <p>{phase}{selectedUnit !== undefined ? ": " + selectedUnit.stats.name : ""}</p>
             <div className={styles.wrapper}>
-                {grid(gridSize, units, selectedUnit)}
+                {grid(gridSize, units, selectedUnit, gridGlows)}
             </div>
             <button onClick={() => dispatch(reset())}>reset</button>
-            <button onClick={() => selectedUnit!==undefined ? console.log(bfs(selectedUnit,units,gridSize)):console.log(null)}> BFS </button>
         </React.Fragment>
     );
 }

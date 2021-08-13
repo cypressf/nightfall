@@ -69,13 +69,13 @@ export const bfs=(mover:Unit, units: Unit[], gridSize: {width: number, height: n
   const {width, height}= gridSize;
 
   const queue = [initialNode];
-  const seenPos= []
+  const seenPos : Position[] = [];
 
   let curNode=initialNode;
   while (queue.length!==0){
     const nodeOrUndef=queue.shift();
     if (nodeOrUndef===undefined){
-      return; //Lets please the tyrannical typescript gods
+      return []; //Lets please the tyrannical typescript gods
     }else{
       curNode=nodeOrUndef;
     }
