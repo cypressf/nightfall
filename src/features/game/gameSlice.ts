@@ -41,7 +41,7 @@ const defaultUnits: Unit[] = [{
         movement: 1,
         attack: 1,
         color: "yellow",
-        headColor: "green",
+        headColor: "rgb(228, 208, 34)",
         id: "b",
     }
 },
@@ -79,7 +79,12 @@ export const isSelected = (position: Position, selectedUnit: Unit | undefined) =
 /**
   Returns a map of {PosHashStr:glowColorStr}
 */
-export const generateGridGlows = (validMovePositions: Position[], selectedUnit: Unit) => {
+export const generateGridGlows = (
+    selectedUnit: Unit,
+    units: Unit[],
+    gridSize: { height: number, width: number }
+) => {
+    const validMovePositions = bfs(selectedUnit, units, gridSize);
     const gridGlows: { [key: string]: string } = {};
     selectedUnit.positions.forEach(position => {
         gridGlows[posHash(position)] = SELECTED_COLOR;
@@ -155,15 +160,15 @@ export const gameSlice = createSlice({
             if (unit.movesUsed >= unit.stats.movement) {
                 return;
             }
-            if (locationValid(getUnitList(state), unit, action.payload)) {
+            const units = getUnitList(state);
+            if (locationValid(units, unit, action.payload)) {
                 unit.positions.push(action.payload);
                 unit.movesUsed++;
             }
             if (unit.positions.length > unit.stats.maxLength) {
                 unit.positions.shift();
             }
-            const validMovePositions = bfs(unit, getUnitList(state), state.gridSize);
-            state.gridGlows = generateGridGlows(validMovePositions, unit);
+            state.gridGlows = generateGridGlows(unit, units, state.gridSize);
         },
         select: (state: GameState, action: PayloadAction<Position>) => {
             const units = getUnitList(state);
@@ -171,9 +176,7 @@ export const gameSlice = createSlice({
             if (selectedUnit) {
                 state.phase = "action";
                 state.selectedUnit = selectedUnit.stats.id;
-
-                const validMovePositions = bfs(selectedUnit, units, state.gridSize);
-                state.gridGlows = generateGridGlows(validMovePositions, selectedUnit);
+                state.gridGlows = generateGridGlows(selectedUnit, units, state.gridSize);
             }
         },
         reset: () => {
@@ -181,7 +184,8 @@ export const gameSlice = createSlice({
         },
         attack: (state: GameState, action: PayloadAction<Position>) => {
             const targetPosition = action.payload;
-            const target = unitAt(targetPosition, getUnitList(state));
+            const units = getUnitList(state);
+            const target = unitAt(targetPosition, units);
             if (state.phase !== "action" || state.selectedUnit === undefined || !target) {
                 return;
             }
@@ -194,6 +198,7 @@ export const gameSlice = createSlice({
                 delete state.units[target.stats.id];
             }
             target.positions.splice(0, unit.stats.attack);
+            state.gridGlows = generateGridGlows(unit, units, state.gridSize);
         },
         endTurn: (state: GameState) => {
             state.turn++;
@@ -201,6 +206,10 @@ export const gameSlice = createSlice({
                 unit.movesUsed = 0;
                 unit.attackUsed = false;
             };
+            const selectedUnit = getSelectedUnit(state);
+            if (selectedUnit) {
+                state.gridGlows = generateGridGlows(selectedUnit, getUnitList(state), state.gridSize);
+            }
         },
     },
 });

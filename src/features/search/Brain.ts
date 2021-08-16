@@ -62,6 +62,9 @@ const adjacent = (pos: Position) => {
 }
 
 export const bfs = (mover: Unit, units: Unit[], gridSize: { width: number, height: number }) => {
+  if (mover.attackUsed) {
+    return [];
+  }
   const initialNode = {
     position: head(mover),
     movement: mover.stats.movement - mover.movesUsed,
