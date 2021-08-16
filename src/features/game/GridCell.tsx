@@ -32,11 +32,12 @@ export const GridCell = ({ position, color, glowColor }: Props) => {
 
         };
     }
+    const style = {
+        backgroundColor: color,
+        boxShadow: glowColor ? "0px 0px 10px" + glowColor : undefined,
+    };
     return <div
-        style={{
-            backgroundColor: color,
-            boxShadow: "0px 0px 10px" + glowColor,
-        }}
+        style={style}
         onContextMenu={handleClick}
         onClick={handleClick}
     ></div>;

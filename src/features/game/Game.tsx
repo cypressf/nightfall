@@ -19,18 +19,20 @@ const getColor = (position: Position, units: Unit[]) => {
     }
 }
 
-const grid = (gridSize: { height: number, width: number }, units: Unit[], selectedUnit: Unit | undefined, gridGlows: { [key: string]: string | undefined }) => {
-    return [...Array(gridSize.height * gridSize.width).keys()]
-        .map(i => {
-            const cellPos = positionOfGrid(i, gridSize);
-            let glowColor = gridGlows[posHash(cellPos)];
-            return <GridCell
-                key={i}
-                color={getColor(cellPos, units)}
-                glowColor={glowColor}
-                position={cellPos} />
-        });
-};
+const grid = (
+    gridSize: { height: number, width: number },
+    units: Unit[],
+    gridGlows: { [key: string]: string | undefined }
+) => [...Array(gridSize.height * gridSize.width).keys()]
+    .map(i => {
+        const cellPos = positionOfGrid(i, gridSize);
+        const glowColor = gridGlows[posHash(cellPos)];
+        return <GridCell
+            key={i}
+            color={getColor(cellPos, units)}
+            glowColor={glowColor}
+            position={cellPos} />
+    });
 
 export function Game() {
     const dispatch = useAppDispatch();
@@ -45,7 +47,7 @@ export function Game() {
             <p>Turn {turn + 1}</p> <button onClick={() => dispatch(endTurn())}>End Turn</button>
             <p>{phase}{selectedUnit !== undefined ? ": " + selectedUnit.stats.name : ""}</p>
             <div className={styles.wrapper}>
-                {grid(gridSize, units, selectedUnit, gridGlows)}
+                {grid(gridSize, units, gridGlows)}
             </div>
             <button onClick={() => dispatch(reset())}>reset</button>
         </React.Fragment>

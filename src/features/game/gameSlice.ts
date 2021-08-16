@@ -3,6 +3,9 @@ import Unit from "../unit/Unit";
 import { Position, posEquals, posHash } from "./Position";
 import { bfs } from "../search/Brain";
 
+const SELECTED_COLOR = "#384bfa";
+const VALID_MOVE_POSITION_COLOR = "#00ff00";
+
 export interface GameState {
     turn: number;
     units: { [key: string]: Unit };
@@ -74,28 +77,17 @@ export const isSelected = (position: Position, selectedUnit: Unit | undefined) =
 }
 
 /**
-  Given a lot of stuff, calculate the proper glow color for -every- cell.
-  I believe this is required since if you just change the new call glows,
-  react won't update the ones which aren't suppopsed to be glowing any more.
   Returns a map of {PosHashStr:glowColorStr}
 */
-export const generateFullGridGlows = (gridSize: { width: number, height: number }, bfsPos: Position[], units: Unit[], selectedUnit: Unit | undefined) => {
-    const toReturn: { [key: string]: string | undefined } = {};
-    [...Array(gridSize.height * gridSize.width).keys()]
-        .forEach(i => {
-            const cellPos = positionOfGrid(i, gridSize);
-            const isMovableCell = bfsPos.some(pos => posEquals(pos, cellPos));
-            const isCellSelected = isSelected(cellPos, selectedUnit);
-            let glowColor = undefined;
-            //TODO: Refactor to some constants file
-            if (isCellSelected) {
-                glowColor = "#384bfa";
-            } else if (isMovableCell) {
-                glowColor = "#00ff00";
-            }
-            toReturn[posHash(cellPos)] = glowColor
-        });
-    return toReturn;
+export const generateGridGlows = (validMovePositions: Position[], selectedUnit: Unit) => {
+    const gridGlows: { [key: string]: string } = {};
+    selectedUnit.positions.forEach(position => {
+        gridGlows[posHash(position)] = SELECTED_COLOR;
+    });
+    validMovePositions.forEach(position => {
+        gridGlows[posHash(position)] = VALID_MOVE_POSITION_COLOR;
+    });
+    return gridGlows;
 }
 
 const initialGridSize = { width: 10, height: 10 };
@@ -108,7 +100,7 @@ const initialState: GameState = {
     phase: "action",
     gridSize: initialGridSize,
     units: initialUnits,
-    gridGlows: generateFullGridGlows(initialGridSize, [], defaultUnits, undefined),
+    gridGlows: {},
 };
 
 export const overlapsAnything = (units: Unit[], newPosition: Position) => {
@@ -170,17 +162,18 @@ export const gameSlice = createSlice({
             if (unit.positions.length > unit.stats.maxLength) {
                 unit.positions.shift();
             }
-            const bfsPos = bfs(unit, getUnitList(state), state.gridSize);
-            state.gridGlows = generateFullGridGlows(state.gridSize, bfsPos, getUnitList(state), unit);
+            const validMovePositions = bfs(unit, getUnitList(state), state.gridSize);
+            state.gridGlows = generateGridGlows(validMovePositions, unit);
         },
         select: (state: GameState, action: PayloadAction<Position>) => {
-            const unit = unitAt(action.payload, getUnitList(state));
-            if (unit) {
+            const units = getUnitList(state);
+            const selectedUnit = unitAt(action.payload, units);
+            if (selectedUnit) {
                 state.phase = "action";
-                state.selectedUnit = unit.stats.id;
+                state.selectedUnit = selectedUnit.stats.id;
 
-                const bfsPos = bfs(unit, getUnitList(state), state.gridSize);
-                state.gridGlows = generateFullGridGlows(state.gridSize, bfsPos, getUnitList(state), unit);
+                const validMovePositions = bfs(selectedUnit, units, state.gridSize);
+                state.gridGlows = generateGridGlows(validMovePositions, selectedUnit);
             }
         },
         reset: () => {
