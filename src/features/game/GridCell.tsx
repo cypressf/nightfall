@@ -4,7 +4,6 @@ import { Position } from "./Position";
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import Unit from "../unit/Unit";
-import styles from './Game.module.css';
 
 
 type Props = {
@@ -35,8 +34,8 @@ export const GridCell = ({ position, color, glowColor }: Props) => {
     }
     return <div
         style={{
-          backgroundColor: color ,
-          boxShadow: "0px 0px 10px" + glowColor,
+            backgroundColor: color,
+            boxShadow: "0px 0px 10px" + glowColor,
         }}
         onContextMenu={handleClick}
         onClick={handleClick}

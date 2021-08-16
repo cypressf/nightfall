@@ -4,9 +4,9 @@ import { useAppDispatch } from "../../app/hooks";
 import { RootState } from "../../app/store";
 import Unit from "../unit/Unit";
 import styles from './Game.module.css';
-import { endTurn, reset, getUnitList, getSelectedUnit} from "./gameSlice";
+import { endTurn, reset, getUnitList, getSelectedUnit, positionOfGrid } from "./gameSlice";
 import { GridCell } from "./GridCell";
-import { Position, posEquals, posHash } from "./Position";
+import { Position, posHash } from "./Position";
 
 const getColor = (position: Position, units: Unit[]) => {
     for (const unit of units) {
@@ -19,27 +19,12 @@ const getColor = (position: Position, units: Unit[]) => {
     }
 }
 
-const positionOfGrid = (i: number, gridSize: { height: number, width: number }) => {
-    const x = Math.floor(i / gridSize.width);
-    const y = i % gridSize.height;
-    return { x, y };
-}
-
-const isSelected = (position: Position, selectedUnit: Unit | undefined) => {
-    if (!selectedUnit) {
-        return false;
-    }
-    return selectedUnit.positions.some(
-        unitPosition => unitPosition.x === position.x && unitPosition.y === position.y
-    );
-}
-
-const grid = (gridSize: { height: number, width: number }, units: Unit[], selectedUnit: Unit | undefined, gridGlows: { [key:string]: string | undefined }) =>{
+const grid = (gridSize: { height: number, width: number }, units: Unit[], selectedUnit: Unit | undefined, gridGlows: { [key: string]: string | undefined }) => {
     return [...Array(gridSize.height * gridSize.width).keys()]
-        .map(i =>{
-          const cellPos=positionOfGrid(i, gridSize);
-          let glowColor = gridGlows[posHash(cellPos)];
-          return  <GridCell
+        .map(i => {
+            const cellPos = positionOfGrid(i, gridSize);
+            let glowColor = gridGlows[posHash(cellPos)];
+            return <GridCell
                 key={i}
                 color={getColor(cellPos, units)}
                 glowColor={glowColor}
