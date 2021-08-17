@@ -7,12 +7,18 @@ const SELECTED_COLOR = "#384bfa";
 const VALID_MOVE_POSITION_COLOR = "rgb(200, 206, 255)";
 const VALID_ATTACK_POSITION_COLOR = "#ff0000";
 
+export type Player = {
+    name: string;
+    unitIds: string[];
+}
+
 export interface GameState {
     turn: number;
     units: { [key: string]: Unit };
     selectedUnit?: string;
     phase: "action";
     gridSize: { width: number, height: number };
+    players: Player[];
 };
 
 const defaultUnits: Unit[] = [{
@@ -57,7 +63,7 @@ const defaultUnits: Unit[] = [{
         attack: 2,
         color: "purple",
         headColor: "pink",
-        id: "p",
+        id: "c",
     }
 }];
 
@@ -124,6 +130,16 @@ const initialState: GameState = {
     phase: "action",
     gridSize: initialGridSize,
     units: initialUnits,
+    players: [
+        {
+            name: "Player 1",
+            unitIds: ["a", "b"],
+        },
+        {
+            name: "Player 2",
+            unitIds: ["c"],
+        },
+    ],
 };
 
 export const overlapsAnything = (units: Unit[], newPosition: Position) => {
@@ -182,8 +198,8 @@ export const gameSlice = createSlice({
             }
         },
         select: (state: GameState, action: PayloadAction<Position>) => {
-            const units = getUnitList(state);
-            const selectedUnit = unitAt(action.payload, units);
+            const activeUnits = getActivePlayerUnits(state);
+            const selectedUnit = unitAt(action.payload, activeUnits);
             if (selectedUnit) {
                 state.phase = "action";
                 state.selectedUnit = selectedUnit.stats.id;
@@ -194,20 +210,20 @@ export const gameSlice = createSlice({
         },
         attack: (state: GameState, action: PayloadAction<Position>) => {
             const targetPosition = action.payload;
-            const units = getUnitList(state);
-            const target = unitAt(targetPosition, units);
+            const enemyUnits = getEnemyUnits(state);
+            const target = unitAt(targetPosition, enemyUnits);
             if (state.phase !== "action" || state.selectedUnit === undefined || !target) {
                 return;
             }
-            const unit = state.units[state.selectedUnit];
-            if (unit === target || unit.attackUsed || !isInRange(unit, targetPosition)) {
+            const attacker = state.units[state.selectedUnit];
+            if (attacker === target || attacker.attackUsed || !isInRange(attacker, targetPosition)) {
                 return;
             }
-            unit.attackUsed = true;
-            if (unit.stats.attack >= target.positions.length) {
+            attacker.attackUsed = true;
+            if (attacker.stats.attack >= target.positions.length) {
                 delete state.units[target.stats.id];
             }
-            target.positions.splice(0, unit.stats.attack);
+            target.positions.splice(0, attacker.stats.attack);
         },
         endTurn: (state: GameState) => {
             state.turn++;
@@ -215,6 +231,7 @@ export const gameSlice = createSlice({
                 unit.movesUsed = 0;
                 unit.attackUsed = false;
             };
+            state.selectedUnit = getActivePlayerUnits(state)[0].stats.id;
         },
     },
 });
@@ -225,7 +242,19 @@ export const getSelectedUnit = (state: GameState) =>
     state.selectedUnit ? state.units[state.selectedUnit] : undefined;
 
 export const getUnitList = (state: GameState) => Object.values(state.units);
-
+export const getActivePlayer = (state: GameState) => state.players[state.turn % state.players.length];
+export const getActivePlayerUnits = (state: GameState) =>
+    getActivePlayer(state)
+        .unitIds
+        .map(unitId => state.units[unitId]);
+export const getEnemyUnits = (state: GameState) => {
+    const activeUnitIds = getActivePlayer(state).unitIds;
+    const units = state.units;
+    const enemyUnits = Object.keys(units)
+        .filter(key => !activeUnitIds.includes(key))
+        .map(key => units[key]);
+    return enemyUnits;
+};
 export const getGridGlows = createSelector(getSelectedUnit, getUnitList, state => state.gridSize, generateGridGlows);
 export const getGridColors = createSelector(getSelectedUnit, getUnitList, state => state.gridSize, generateGridColors);
 
