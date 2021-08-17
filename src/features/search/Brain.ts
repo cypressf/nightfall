@@ -3,33 +3,17 @@ import { Position, posEquals } from "../game/Position";
 import { overlapsAnything } from "../game/gameSlice";
 
 
-const head = (unit: Unit) => {
+export const head = (unit: Unit) => {
   return unit.positions[unit.positions.length - 1];
 }
 
-const manDistance = (pos1: Position, pos2: Position) => {
-  return Math.abs(pos1.x - pos2.x) + Math.abs(pos2.y - pos2.y);
+export const isInRange = (attacker: Unit, target: Position) => {
+  const attackerHead = head(attacker);
+  return Math.abs(attackerHead.x - target.x) + Math.abs(attackerHead.y - target.y) <= attacker.stats.range;
 }
 
-const unitDistance = (unit1: Unit, unit2: Unit) => {
-  let minSection = unit2.positions[0];
-  let minDistance = manDistance(head(unit1), minSection);
-  for (let targetSection of unit2.positions) {
-    const distance = manDistance(head(unit1), targetSection);
-    if (distance < minDistance) {
-      minDistance = distance;
-      minSection = targetSection;
-    }
-  }
-  return {
-    distance: minDistance,
-    position: minSection,
-  }
-}
-
-const isWithinRange = (attacker: Unit, defender: Unit) => {
-  const { distance, position } = unitDistance(attacker, defender);
-  return distance < attacker.stats.range + attacker.stats.movement;
+export const withinAttackRange = (attacker: Unit) => {
+  return withinRange(head(attacker), attacker.stats.range);
 }
 
 const inBounds = (positions: Position[], width: number, height: number) => {
@@ -52,14 +36,20 @@ const unseen = (positions: Position[], seenPos: Position[]) => {
   })
 }
 
-const adjacent = (pos: Position) => {
-  return [
-    { x: pos.x, y: pos.y - 1 },
-    { x: pos.x, y: pos.y + 1 },
-    { x: pos.x + 1, y: pos.y },
-    { x: pos.x - 1, y: pos.y },
-  ]
+const withinRange = (position: Position, distance: number) => {
+  const adjacentPositions = [];
+  for (let x = -distance; x <= distance; x++) {
+    for (let y = -distance + Math.abs(x); y <= distance - Math.abs(x); y++) {
+      adjacentPositions.push({
+        x: position.x + x,
+        y: position.y + y
+      });
+    }
+  }
+  return adjacentPositions;
 }
+
+const adjacent = (position: Position) => withinRange(position, 1);
 
 export const bfs = (mover: Unit, units: Unit[], gridSize: { width: number, height: number }) => {
   if (mover.attackUsed) {

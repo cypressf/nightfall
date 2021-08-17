@@ -1,10 +1,11 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import Unit from "../unit/Unit";
-import { Position, posEquals, posHash } from "./Position";
-import { bfs } from "../search/Brain";
+import { Position, posHash } from "./Position";
+import { bfs, head, isInRange, withinAttackRange } from "../search/Brain";
 
 const SELECTED_COLOR = "#384bfa";
-const VALID_MOVE_POSITION_COLOR = "#00ff00";
+const VALID_MOVE_POSITION_COLOR = "rgb(200, 206, 255)";
+const VALID_ATTACK_POSITION_COLOR = "#ff0000";
 
 export interface GameState {
     turn: number;
@@ -12,7 +13,6 @@ export interface GameState {
     selectedUnit?: string;
     phase: "action";
     gridSize: { width: number, height: number };
-    gridGlows: { [key: string]: string | undefined };
 };
 
 const defaultUnits: Unit[] = [{
@@ -79,20 +79,39 @@ export const isSelected = (position: Position, selectedUnit: Unit | undefined) =
 /**
   Returns a map of {PosHashStr:glowColorStr}
 */
-export const generateGridGlows = (
-    selectedUnit: Unit,
-    units: Unit[],
-    gridSize: { height: number, width: number }
-) => {
-    const validMovePositions = bfs(selectedUnit, units, gridSize);
+export const generateGridGlows = (selectedUnit: Unit | undefined) => {
     const gridGlows: { [key: string]: string } = {};
+    if (!selectedUnit) {
+        return gridGlows;
+    }
+    withinAttackRange(selectedUnit).forEach(position => {
+        gridGlows[posHash(position)] = VALID_ATTACK_POSITION_COLOR;
+    });
     selectedUnit.positions.forEach(position => {
         gridGlows[posHash(position)] = SELECTED_COLOR;
     });
-    validMovePositions.forEach(position => {
-        gridGlows[posHash(position)] = VALID_MOVE_POSITION_COLOR;
-    });
     return gridGlows;
+}
+
+export const generateGridColors = (
+    selectedUnit: Unit | undefined,
+    units: Unit[],
+    gridSize: { height: number, width: number },
+) => {
+    const gridColors: { [key: string]: string } = {};
+    units.forEach(unit => {
+        unit.positions.forEach(position => {
+            gridColors[posHash(position)] = unit.stats.color;
+        });
+        gridColors[posHash(head(unit))] = unit.stats.headColor;
+    });
+    if (selectedUnit) {
+        const validMovePositions = bfs(selectedUnit, units, gridSize);
+        validMovePositions.forEach(position => {
+            gridColors[posHash(position)] = VALID_MOVE_POSITION_COLOR;
+        });
+    }
+    return gridColors;
 }
 
 const initialGridSize = { width: 10, height: 10 };
@@ -105,7 +124,6 @@ const initialState: GameState = {
     phase: "action",
     gridSize: initialGridSize,
     units: initialUnits,
-    gridGlows: {},
 };
 
 export const overlapsAnything = (units: Unit[], newPosition: Position) => {
@@ -142,12 +160,6 @@ export const unitAt = (position: Position, units: Unit[]) => {
     }
 }
 
-const isInRange = (unit: Unit, target: Position) => {
-    const head = unit.positions[unit.positions.length - 1];
-    return Math.abs(head.x - target.x) + Math.abs(head.y - target.y) <= unit.stats.range;
-}
-
-
 export const gameSlice = createSlice({
     name: 'game',
     initialState,
@@ -168,7 +180,6 @@ export const gameSlice = createSlice({
             if (unit.positions.length > unit.stats.maxLength) {
                 unit.positions.shift();
             }
-            state.gridGlows = generateGridGlows(unit, units, state.gridSize);
         },
         select: (state: GameState, action: PayloadAction<Position>) => {
             const units = getUnitList(state);
@@ -176,7 +187,6 @@ export const gameSlice = createSlice({
             if (selectedUnit) {
                 state.phase = "action";
                 state.selectedUnit = selectedUnit.stats.id;
-                state.gridGlows = generateGridGlows(selectedUnit, units, state.gridSize);
             }
         },
         reset: () => {
@@ -198,7 +208,6 @@ export const gameSlice = createSlice({
                 delete state.units[target.stats.id];
             }
             target.positions.splice(0, unit.stats.attack);
-            state.gridGlows = generateGridGlows(unit, units, state.gridSize);
         },
         endTurn: (state: GameState) => {
             state.turn++;
@@ -206,10 +215,6 @@ export const gameSlice = createSlice({
                 unit.movesUsed = 0;
                 unit.attackUsed = false;
             };
-            const selectedUnit = getSelectedUnit(state);
-            if (selectedUnit) {
-                state.gridGlows = generateGridGlows(selectedUnit, getUnitList(state), state.gridSize);
-            }
         },
     },
 });
@@ -220,5 +225,8 @@ export const getSelectedUnit = (state: GameState) =>
     state.selectedUnit ? state.units[state.selectedUnit] : undefined;
 
 export const getUnitList = (state: GameState) => Object.values(state.units);
+
+export const getGridGlows = createSelector(getSelectedUnit, getUnitList, state => state.gridSize, generateGridGlows);
+export const getGridColors = createSelector(getSelectedUnit, getUnitList, state => state.gridSize, generateGridColors);
 
 export default gameSlice.reducer;
