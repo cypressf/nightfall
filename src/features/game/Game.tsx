@@ -3,15 +3,17 @@ import { useSelector } from "react-redux"
 import { useAppDispatch } from "../../app/hooks";
 import { RootState } from "../../app/store";
 import styles from './Game.module.css';
-import { endTurn, reset, getSelectedUnit, getGridGlows, getGridColors, getActivePlayer } from "./gameSlice";
+import { endTurn, reset, getSelectedUnit, getGridGlows, getGridColors, getActivePlayer, Phase } from "./gameSlice";
 import { Grid, gridDimensions, positionOfGrid } from "./Grid";
 import { GridCell } from "./GridCell";
 import { posHash } from "./Position";
+import UnitInfo from "./UnitInfo";
 
 const genGrid = (
     grid: Grid,
     gridGlows: { [key: string]: string | undefined },
     gridColors: { [key: string]: string | undefined },
+    phase: Phase,
 ) => [...Array(gridDimensions(grid).height * gridDimensions(grid).width).keys()]
     .map(i => {
         const cellPos = positionOfGrid(i, grid);
@@ -21,7 +23,8 @@ const genGrid = (
             key={i}
             color={color}
             glowColor={glowColor}
-            position={cellPos} />
+            position={cellPos}
+            phase={phase} />
     });
 
 export function Game() {
@@ -36,10 +39,19 @@ export function Game() {
         }));
     return (
         <React.Fragment>
-            <p>Turn {turn + 1}: {activePlayer.name}</p> <button onClick={() => dispatch(endTurn())}>End Turn</button>
+            {
+                phase === "game over" &&
+                <p>Game over. Player {activePlayer.name} wins!</p>
+            }
+            <p>Turn {turn + 1}: {activePlayer.name}</p>
+            {phase !== "game over" && <button onClick={() => dispatch(endTurn())}>End Turn</button>}
             <p>{phase}{selectedUnit !== undefined ? ": " + selectedUnit.stats.name : ""}</p>
-            <div className={styles.wrapper}>
-                {genGrid(grid, gridGlows, gridColors)}
+
+            <div id={styles.mapAndInfo}>
+                <div className={styles.wrapper}>
+                    {genGrid(grid, gridGlows, gridColors, phase)}
+                </div>
+                {selectedUnit && <UnitInfo unit={selectedUnit} />}
             </div>
             <button onClick={() => dispatch(reset())}>reset</button>
         </React.Fragment>
