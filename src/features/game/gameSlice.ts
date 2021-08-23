@@ -3,10 +3,22 @@ import Unit from "../unit/Unit";
 import { Position, posHash } from "./Position";
 import { bfs, head, isInRange, withinAttackRange } from "../search/Brain";
 import { Grid, rectGridConstructor } from "./Grid";
+import * as d3 from "d3-color";
 
 const SELECTED_COLOR = "#384bfa";
 const VALID_MOVE_POSITION_COLOR = "rgb(201, 230, 253)";
 const VALID_ATTACK_POSITION_COLOR = "#ff0000";
+
+const UNIT_LIGHTNESS = 0.5; // 0 to 1
+const UNIT_SATURATION = 1; // 0 to 2
+
+const unitColor = (hue: number) => {
+    return d3.cubehelix(hue, UNIT_SATURATION, UNIT_LIGHTNESS).toString();
+}
+
+const unitHeadColor = (hue: number) => {
+    return d3.cubehelix(hue, UNIT_SATURATION + 0.2, UNIT_LIGHTNESS - 0.1).toString();
+}
 
 export type Player = {
     name: string;
@@ -35,8 +47,8 @@ const defaultUnits: Unit[] = [{
         range: 1,
         movement: 2,
         attack: 3,
-        color: "red",
-        headColor: "brown",
+        color: unitColor(0),
+        headColor: unitHeadColor(0),
         id: "a",
     }
 },
@@ -50,8 +62,8 @@ const defaultUnits: Unit[] = [{
         range: 3,
         movement: 1,
         attack: 1,
-        color: "yellow",
-        headColor: "rgb(228, 208, 34)",
+        color: unitColor(100),
+        headColor: unitHeadColor(100),
         id: "b",
     }
 },
@@ -65,8 +77,8 @@ const defaultUnits: Unit[] = [{
         range: 1,
         movement: 5,
         attack: 2,
-        color: "purple",
-        headColor: "pink",
+        color: unitColor(200),
+        headColor: unitHeadColor(200),
         id: "c",
     }
 }];
@@ -101,13 +113,25 @@ export const generateGridColors = (
     selectedUnit: Unit | undefined,
     units: Unit[],
     grid: Grid,
+    activePlayer: Player,
 ) => {
     const gridColors: { [key: string]: string } = {};
     units.forEach(unit => {
+        const isActivePlayerUnit = activePlayer.unitIds.includes(unit.stats.id);
+        const color = d3.cubehelix(unit.stats.color)!;
+        const headColor = d3.cubehelix(unit.stats.headColor)!;
+
+        if (!isActivePlayerUnit) {
+            color.s *= 0.2;
+            headColor.s *= 0.2;
+            color.l *= 1.5;
+            headColor.l *= 1.5;
+        }
+
         unit.positions.forEach(position => {
-            gridColors[posHash(position)] = unit.stats.color;
+            gridColors[posHash(position)] = color.toString();
         });
-        gridColors[posHash(head(unit))] = unit.stats.headColor;
+        gridColors[posHash(head(unit))] = headColor.toString();
     });
     if (selectedUnit) {
         const validMovePositions = bfs(selectedUnit, units, grid);
@@ -267,6 +291,6 @@ export const deleteDeadPlayers = (state: GameState) => {
     state.players = state.players.filter(player => getUnitsForPlayer(state, player).length > 0);
 }
 export const getGridGlows = createSelector(getSelectedUnit, getUnitList, state => state.grid, generateGridGlows);
-export const getGridColors = createSelector(getSelectedUnit, getUnitList, state => state.grid, generateGridColors);
+export const getGridColors = createSelector(getSelectedUnit, getUnitList, state => state.grid, getActivePlayer, generateGridColors);
 
 export default gameSlice.reducer;
