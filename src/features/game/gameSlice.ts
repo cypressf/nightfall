@@ -102,9 +102,11 @@ export const generateGridGlows = (selectedUnit: Unit | undefined) => {
     if (!selectedUnit) {
         return gridGlows;
     }
-    withinAttackRange(selectedUnit).forEach(position => {
-        gridGlows[posHash(position)] = VALID_ATTACK_POSITION_COLOR;
-    });
+    if (!selectedUnit.attackUsed) {
+        withinAttackRange(selectedUnit).forEach(position => {
+            gridGlows[posHash(position)] = VALID_ATTACK_POSITION_COLOR;
+        });
+    }
     selectedUnit.positions.forEach(position => {
         gridGlows[posHash(position)] = SELECTED_COLOR;
     });

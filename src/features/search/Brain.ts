@@ -17,8 +17,8 @@ export const withinAttackRange = (attacker: Unit) => {
   return withinRange(head(attacker), attacker.stats.range);
 }
 
-const inBounds = (positions: Position[], grid:Grid) => {
-  return positions.filter(pos => inGrid(grid,pos));
+const inBounds = (positions: Position[], grid: Grid) => {
+  return positions.filter(pos => inGrid(grid, pos));
 }
 
 const empty = (positions: Position[], units: Unit[]) => {
@@ -53,9 +53,6 @@ const withinRange = (position: Position, distance: number) => {
 const adjacent = (position: Position) => withinRange(position, 1);
 
 export const bfs = (mover: Unit, units: Unit[], grid: Grid) => {
-  if (mover.attackUsed) {
-    return [];
-  }
   const initialNode = {
     position: head(mover),
     movement: mover.stats.movement - mover.movesUsed,
