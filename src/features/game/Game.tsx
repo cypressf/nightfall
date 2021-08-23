@@ -6,6 +6,7 @@ import styles from './Game.module.css';
 import { endTurn, reset, getSelectedUnit, positionOfGrid, getGridGlows, getGridColors, getActivePlayer, Phase } from "./gameSlice";
 import { GridCell } from "./GridCell";
 import { posHash } from "./Position";
+import UnitInfo from "./UnitInfo";
 
 const grid = (
     gridSize: { height: number, width: number },
@@ -44,8 +45,11 @@ export function Game() {
             <p>Turn {turn + 1}: {activePlayer.name}</p>
             {phase !== "game over" && <button onClick={() => dispatch(endTurn())}>End Turn</button>}
             <p>{phase}{selectedUnit !== undefined ? ": " + selectedUnit.stats.name : ""}</p>
-            <div className={styles.wrapper}>
-                {grid(gridSize, gridGlows, gridColors, phase)}
+            <div id={styles.mapAndInfo}>
+                <div className={styles.wrapper}>
+                    {grid(gridSize, gridGlows, gridColors, phase)}
+                </div>
+                {selectedUnit && <UnitInfo unit={selectedUnit} />}
             </div>
             <button onClick={() => dispatch(reset())}>reset</button>
         </React.Fragment>
