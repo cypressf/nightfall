@@ -3,7 +3,7 @@ import { useSelector } from "react-redux"
 import { useAppDispatch } from "../../app/hooks";
 import { RootState } from "../../app/store";
 import styles from './Game.module.css';
-import { endTurn, reset, getSelectedUnit, positionOfGrid, getGridGlows, getGridColors, getActivePlayer } from "./gameSlice";
+import { endTurn, reset, getSelectedUnit, positionOfGrid, getGridGlows, getGridColors, getActivePlayer, Phase } from "./gameSlice";
 import { GridCell } from "./GridCell";
 import { posHash } from "./Position";
 
@@ -11,6 +11,7 @@ const grid = (
     gridSize: { height: number, width: number },
     gridGlows: { [key: string]: string | undefined },
     gridColors: { [key: string]: string | undefined },
+    phase: Phase,
 ) => [...Array(gridSize.height * gridSize.width).keys()]
     .map(i => {
         const cellPos = positionOfGrid(i, gridSize);
@@ -20,7 +21,8 @@ const grid = (
             key={i}
             color={color}
             glowColor={glowColor}
-            position={cellPos} />
+            position={cellPos}
+            phase={phase} />
     });
 
 export function Game() {
@@ -35,10 +37,15 @@ export function Game() {
         }));
     return (
         <React.Fragment>
-            <p>Turn {turn + 1}: {activePlayer.name}</p> <button onClick={() => dispatch(endTurn())}>End Turn</button>
+            {
+                phase === "game over" &&
+                <p>Game over. Player {activePlayer.name} wins!</p>
+            }
+            <p>Turn {turn + 1}: {activePlayer.name}</p>
+            {phase !== "game over" && <button onClick={() => dispatch(endTurn())}>End Turn</button>}
             <p>{phase}{selectedUnit !== undefined ? ": " + selectedUnit.stats.name : ""}</p>
             <div className={styles.wrapper}>
-                {grid(gridSize, gridGlows, gridColors)}
+                {grid(gridSize, gridGlows, gridColors, phase)}
             </div>
             <button onClick={() => dispatch(reset())}>reset</button>
         </React.Fragment>
