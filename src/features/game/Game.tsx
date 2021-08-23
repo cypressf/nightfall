@@ -29,7 +29,7 @@ const genGrid = (
 
 export function Game() {
     const dispatch = useAppDispatch();
-    const { grid, phase, selectedUnit, turn, gridGlows, gridColors, activePlayer } =
+    const { grid, phase, selectedUnit, gridGlows, gridColors, activePlayer } =
         useSelector((state: RootState) => ({
             ...state.game,
             selectedUnit: getSelectedUnit(state.game),

@@ -5,7 +5,7 @@ import { bfs, head, isInRange, withinAttackRange } from "../search/Brain";
 import { Grid, rectGridConstructor } from "./Grid";
 
 const SELECTED_COLOR = "#384bfa";
-const VALID_MOVE_POSITION_COLOR = "rgb(200, 206, 255)";
+const VALID_MOVE_POSITION_COLOR = "rgb(201, 230, 253)";
 const VALID_ATTACK_POSITION_COLOR = "#ff0000";
 
 export type Player = {
@@ -100,7 +100,7 @@ export const generateGridGlows = (selectedUnit: Unit | undefined) => {
 export const generateGridColors = (
     selectedUnit: Unit | undefined,
     units: Unit[],
-    grid:Grid,
+    grid: Grid,
 ) => {
     const gridColors: { [key: string]: string } = {};
     units.forEach(unit => {
