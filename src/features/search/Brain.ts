@@ -1,6 +1,7 @@
 import Unit from "../unit/Unit";
 import { Position, posEquals } from "../game/Position";
 import { overlapsAnything } from "../game/gameSlice";
+import { Grid, gridDimensions, inGrid } from "../game/Grid";
 
 
 export const head = (unit: Unit) => {
@@ -16,8 +17,8 @@ export const withinAttackRange = (attacker: Unit) => {
   return withinRange(head(attacker), attacker.stats.range);
 }
 
-const inBounds = (positions: Position[], width: number, height: number) => {
-  return positions.filter(pos => pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height);
+const inBounds = (positions: Position[], grid:Grid) => {
+  return positions.filter(pos => inGrid(grid,pos));
 }
 
 const empty = (positions: Position[], units: Unit[]) => {
@@ -51,7 +52,7 @@ const withinRange = (position: Position, distance: number) => {
 
 const adjacent = (position: Position) => withinRange(position, 1);
 
-export const bfs = (mover: Unit, units: Unit[], gridSize: { width: number, height: number }) => {
+export const bfs = (mover: Unit, units: Unit[], grid: Grid) => {
   if (mover.attackUsed) {
     return [];
   }
@@ -59,8 +60,6 @@ export const bfs = (mover: Unit, units: Unit[], gridSize: { width: number, heigh
     position: head(mover),
     movement: mover.stats.movement - mover.movesUsed,
   }
-  const { width, height } = gridSize;
-
   const queue = [initialNode];
   const seenPos: Position[] = [];
 
@@ -82,7 +81,7 @@ export const bfs = (mover: Unit, units: Unit[], gridSize: { width: number, heigh
     }
 
     const nearPlaces = adjacent(curNode.position);
-    const inPlaces = inBounds(nearPlaces, width, height);
+    const inPlaces = inBounds(nearPlaces, grid);
     const emptyPlaces = empty(inPlaces, units);
     const unseenPlaces = unseen(emptyPlaces, seenPos);
 

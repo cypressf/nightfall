@@ -97,7 +97,7 @@ export const generateGridGlows = (selectedUnit: Unit | undefined) => {
 export const generateGridColors = (
     selectedUnit: Unit | undefined,
     units: Unit[],
-    gridSize: { height: number, width: number },
+    grid:Grid,
 ) => {
     const gridColors: { [key: string]: string } = {};
     units.forEach(unit => {
@@ -107,7 +107,7 @@ export const generateGridColors = (
         gridColors[posHash(head(unit))] = unit.stats.headColor;
     });
     if (selectedUnit) {
-        const validMovePositions = bfs(selectedUnit, units, gridSize);
+        const validMovePositions = bfs(selectedUnit, units, grid);
         validMovePositions.forEach(position => {
             gridColors[posHash(position)] = VALID_MOVE_POSITION_COLOR;
         });
@@ -250,7 +250,7 @@ export const getEnemyUnits = (state: GameState) => {
         .map(key => units[key]);
     return enemyUnits;
 };
-export const getGridGlows = createSelector(getSelectedUnit, getUnitList, state => gridDimensions(state.grid), generateGridGlows);
-export const getGridColors = createSelector(getSelectedUnit, getUnitList, state => gridDimensions(state.grid), generateGridColors);
+export const getGridGlows = createSelector(getSelectedUnit, getUnitList, state => state.grid, generateGridGlows);
+export const getGridColors = createSelector(getSelectedUnit, getUnitList, state => state.grid, generateGridColors);
 
 export default gameSlice.reducer;

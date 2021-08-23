@@ -1,4 +1,4 @@
-import { revHash } from "./Position";
+import { Position, revHash } from "./Position";
 import { posHash } from "./Position";
 
 export type Grid =  {
@@ -25,6 +25,10 @@ export const positionOfGrid = (i: number, grid:Grid) => {
     const x = Math.floor(i / gridSize.width);
     const y = i % gridSize.height;
     return { x, y };
+}
+
+export const inGrid = (grid:Grid, pos: Position) =>{
+    return grid.hasOwnProperty(posHash(pos));
 }
 
 export const rectGridConstructor = (width:number, height:number) => {
