@@ -42,8 +42,13 @@ export function Game() {
                 phase === "game over" &&
                 <p>Game over. Player {activePlayer.name} wins!</p>
             }
-            <p>Turn {turn + 1}: {activePlayer.name}</p>
-            {phase !== "game over" && <button onClick={() => dispatch(endTurn())}>End Turn</button>}
+            <h1>{activePlayer.name}'s turn</h1>
+            {
+                phase !== "game over" &&
+                <button
+                    onClick={() => dispatch(endTurn())}
+                    id={styles.endTurn}>End Turn</button>
+            }
             <p>{phase}{selectedUnit !== undefined ? ": " + selectedUnit.stats.name : ""}</p>
             <div id={styles.mapAndInfo}>
                 <div className={styles.wrapper}>

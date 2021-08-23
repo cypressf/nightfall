@@ -31,3 +31,7 @@ body {
 #mapAndInfo {
     display: flex;
 }
+
+#endTurn {
+    font-size: 2em;
+}
