@@ -1,8 +1,7 @@
-import { attack, move, select, unitAt, getUnitList, Phase } from "./gameSlice";
+import { attack, move, select, unitAt, selectUnitList, Phase, selectActivePlayerUnits } from "./gameSlice";
 import { useAppDispatch } from "../../app/hooks";
 import { Position } from "./Position";
 import { useSelector } from "react-redux";
-import { RootState } from "../../app/store";
 import Unit from "../unit/Unit";
 
 
@@ -17,22 +16,26 @@ const isEmpty = (position: Position, units: Unit[]) => unitAt(position, units) =
 
 export const GridCell = ({ position, color, glowColor, phase }: Props) => {
     const dispatch = useAppDispatch();
-    const units = useSelector((state: RootState) => getUnitList(state.game));
-    const handleClick = phase !== "game over" ? (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        switch (event.button) {
-            case 0:
-                if (isEmpty(position, units)) {
-                    dispatch(move(position)); break;
-                } else {
-                    dispatch(select(position)); break;
-                }
-            case 2:
-                dispatch(attack(position));
-                event.preventDefault();
-                break;
+    const units = useSelector(selectUnitList);
+    const activePlayerUnits = useSelector(selectActivePlayerUnits);
+    const handleClick = () => {
+        const unit = unitAt(position, units);
+        if (unit && activePlayerUnits.includes(unit)) {
+            dispatch(select(position));
+        } else {
+            switch (phase) {
+                case "move":
+                    if (isEmpty(position, units)) {
+                        dispatch(move(position));
+                    }
+                    break;
+                case "attack":
+                    dispatch(attack(position));
+                    break;
+            };
+        }
 
-        };
-    } : undefined;
+    };
     const style = {
         backgroundColor: color,
         boxShadow: glowColor ? "0px 0px 10px" + glowColor : undefined,
@@ -40,7 +43,6 @@ export const GridCell = ({ position, color, glowColor, phase }: Props) => {
     };
     return <div
         style={style}
-        onContextMenu={handleClick}
         onClick={handleClick}
     ></div>;
 }

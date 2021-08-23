@@ -3,7 +3,7 @@ import { useSelector } from "react-redux"
 import { useAppDispatch } from "../../app/hooks";
 import { RootState } from "../../app/store";
 import styles from './Game.module.css';
-import { endTurn, reset, getSelectedUnit, getGridGlows, getGridColors, getActivePlayer, Phase } from "./gameSlice";
+import { endTurn, reset, selectSelectedUnit, getGridGlows, getGridColors, selectActivePlayer, Phase, clickAttack, clickMove } from "./gameSlice";
 import { Grid, gridDimensions, positionOfGrid } from "./Grid";
 import { GridCell } from "./GridCell";
 import { posHash } from "./Position";
@@ -32,25 +32,43 @@ export function Game() {
     const { grid, phase, selectedUnit, gridGlows, gridColors, activePlayer } =
         useSelector((state: RootState) => ({
             ...state.game,
-            selectedUnit: getSelectedUnit(state.game),
-            gridGlows: getGridGlows(state.game),
-            gridColors: getGridColors(state.game),
-            activePlayer: getActivePlayer(state.game),
+            selectedUnit: selectSelectedUnit(state),
+            gridGlows: getGridGlows(state),
+            gridColors: getGridColors(state),
+            activePlayer: selectActivePlayer(state),
         }));
     return (
         <React.Fragment>
             {
                 phase === "game over" &&
-                <p>Game over. Player {activePlayer.name} wins!</p>
+                <h1>Game over, {activePlayer.name} wins!</h1>
             }
-            <h1>{activePlayer.name}'s turn</h1>
             {
                 phase !== "game over" &&
-                <button
-                    onClick={() => dispatch(endTurn())}
-                    id={styles.endTurn}>End Turn</button>
+                <h1>
+                    {activePlayer.name}:
+                    {
+                        phase === "move" &&
+                        <button
+                            onClick={() => dispatch(clickAttack())}
+                            className={styles.button}>Attack</button>
+                    }
+                    {
+                        phase === "attack" && selectedUnit &&
+                        <button
+                            onClick={() => dispatch(clickMove())}
+                            className={styles.button}
+                            disabled={selectedUnit.movesUsed === selectedUnit.stats.movement}>
+                            Move
+                        </button>
+                    }
+                    <button
+                        onClick={() => dispatch(endTurn())}
+                        className={styles.button}>End Turn</button>
+
+                </h1>
             }
-            <p>{phase}{selectedUnit !== undefined ? ": " + selectedUnit.stats.name : ""}</p>
+
 
             <div id={styles.mapAndInfo}>
                 <div className={styles.wrapper}>
