@@ -1,7 +1,7 @@
 import Unit from "../unit/Unit";
 import { Position, posEquals } from "../game/Position";
 import { overlapsAnything } from "../game/gameSlice";
-import { Grid, gridDimensions, inGrid } from "../game/Grid";
+import { Grid, inGrid } from "../game/Grid";
 
 
 export const head = (unit: Unit) => {
