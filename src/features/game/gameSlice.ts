@@ -2,6 +2,7 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import Unit from "../unit/Unit";
 import { Position, posHash } from "./Position";
 import { bfs, head, isInRange, withinAttackRange } from "../search/Brain";
+import { Grid, rectGridConstructor } from "./Grid";
 
 const SELECTED_COLOR = "#384bfa";
 const VALID_MOVE_POSITION_COLOR = "rgb(200, 206, 255)";
@@ -18,9 +19,9 @@ export interface GameState {
     turn: number;
     units: { [key: string]: Unit };
     selectedUnit?: string;
+    grid: Grid;
     winner?: string;
     phase: Phase;
-    gridSize: { width: number, height: number };
     players: Player[];
 };
 
@@ -70,12 +71,6 @@ const defaultUnits: Unit[] = [{
     }
 }];
 
-export const positionOfGrid = (i: number, gridSize: { height: number, width: number }) => {
-    const x = Math.floor(i / gridSize.width);
-    const y = i % gridSize.height;
-    return { x, y };
-}
-
 export const isSelected = (position: Position, selectedUnit: Unit | undefined) => {
     if (!selectedUnit) {
         return false;
@@ -105,7 +100,7 @@ export const generateGridGlows = (selectedUnit: Unit | undefined) => {
 export const generateGridColors = (
     selectedUnit: Unit | undefined,
     units: Unit[],
-    gridSize: { height: number, width: number },
+    grid:Grid,
 ) => {
     const gridColors: { [key: string]: string } = {};
     units.forEach(unit => {
@@ -115,7 +110,7 @@ export const generateGridColors = (
         gridColors[posHash(head(unit))] = unit.stats.headColor;
     });
     if (selectedUnit) {
-        const validMovePositions = bfs(selectedUnit, units, gridSize);
+        const validMovePositions = bfs(selectedUnit, units, grid);
         validMovePositions.forEach(position => {
             gridColors[posHash(position)] = VALID_MOVE_POSITION_COLOR;
         });
@@ -123,7 +118,7 @@ export const generateGridColors = (
     return gridColors;
 }
 
-const initialGridSize = { width: 10, height: 10 };
+const initialGrid = rectGridConstructor(10, 10);
 const initialUnits = defaultUnits.reduce((map: { [key: string]: Unit }, unit) => {
     map[unit.stats.id] = unit;
     return map;
@@ -131,7 +126,7 @@ const initialUnits = defaultUnits.reduce((map: { [key: string]: Unit }, unit) =>
 const initialState: GameState = {
     turn: 0,
     phase: "action",
-    gridSize: initialGridSize,
+    grid: initialGrid,
     units: initialUnits,
     players: [
         {
@@ -267,10 +262,11 @@ export const getEnemyUnits = (state: GameState) => {
         .map(key => units[key]);
     return enemyUnits;
 };
+
 export const deleteDeadPlayers = (state: GameState) => {
     state.players = state.players.filter(player => getUnitsForPlayer(state, player).length > 0);
 }
-export const getGridGlows = createSelector(getSelectedUnit, getUnitList, state => state.gridSize, generateGridGlows);
-export const getGridColors = createSelector(getSelectedUnit, getUnitList, state => state.gridSize, generateGridColors);
+export const getGridGlows = createSelector(getSelectedUnit, getUnitList, state => state.grid, generateGridGlows);
+export const getGridColors = createSelector(getSelectedUnit, getUnitList, state => state.grid, generateGridColors);
 
 export default gameSlice.reducer;

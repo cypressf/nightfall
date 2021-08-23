@@ -10,3 +10,8 @@ export const posEquals=(pos1:Position,pos2:Position)=>{
 export const posHash = (pos: Position) =>{
   return pos.x+"-"+pos.y;
 }
+
+export const revHash = (posStr:string) =>{
+  const posList=posStr.split("-");
+  return {x:parseInt(posList[0]), y:parseInt(posList[1])};
+} 
