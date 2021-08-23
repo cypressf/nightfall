@@ -2,11 +2,12 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import Unit from "../unit/Unit";
 import { Position, posHash } from "./Position";
 import { bfs, head, isInRange, withinAttackRange } from "../search/Brain";
-import { Grid, rectGridConstructor } from "./Grid";
+import { Grid, inGrid, rectGridConstructor } from "./Grid";
 
 const SELECTED_COLOR = "#384bfa";
 const VALID_MOVE_POSITION_COLOR = "rgb(200, 206, 255)";
 const VALID_ATTACK_POSITION_COLOR = "#ff0000";
+const GAP_COLOR = "#ffffff";
 
 export type Player = {
     name: string;
@@ -103,6 +104,11 @@ export const generateGridColors = (
     grid:Grid,
 ) => {
     const gridColors: { [key: string]: string } = {};
+
+    Object.entries(grid).filter(([key,val])=>!val).forEach(([key,val])=>{
+        gridColors[key]=GAP_COLOR;
+    });
+
     units.forEach(unit => {
         unit.positions.forEach(position => {
             gridColors[posHash(position)] = unit.stats.color;
@@ -119,6 +125,8 @@ export const generateGridColors = (
 }
 
 const initialGrid = rectGridConstructor(10, 10);
+initialGrid["6-6"]=false;
+initialGrid["6-5"]=false;
 const initialUnits = defaultUnits.reduce((map: { [key: string]: Unit }, unit) => {
     map[unit.stats.id] = unit;
     return map;
@@ -158,12 +166,12 @@ const overlaps = (positions: Position[], position: Position) => {
     return false;
 }
 
-const locationValid = (units: Unit[], unit: Unit, newPosition: Position) => {
+const locationValid = (grid:Grid, units: Unit[], unit: Unit, newPosition: Position) => {
     const oldPositions = unit.positions;
     const oldHead = oldPositions[oldPositions.length - 1];
     return Math.abs(newPosition.x - oldHead.x) +
         Math.abs(newPosition.y - oldHead.y) <= 1 &&
-        !overlapsAnything(units, newPosition);
+        !overlapsAnything(units, newPosition) && inGrid(grid,newPosition);
 }
 
 export const unitAt = (position: Position, units: Unit[]) => {
@@ -187,7 +195,7 @@ export const gameSlice = createSlice({
                 return;
             }
             const units = getUnitList(state);
-            if (locationValid(units, unit, action.payload)) {
+            if (locationValid(state.grid,units, unit, action.payload)) {
                 unit.positions.push(action.payload);
                 unit.movesUsed++;
             }
