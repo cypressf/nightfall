@@ -36,6 +36,7 @@ export const GridCell = ({ position, color, glowColor, phase }: Props) => {
     const style = {
         backgroundColor: color,
         boxShadow: glowColor ? "0px 0px 10px" + glowColor : undefined,
+        transition: "background-color 0.2s",
     };
     return <div
         style={style}
