@@ -28,7 +28,7 @@ export const positionOfGrid = (i: number, grid:Grid) => {
 }
 
 export const inGrid = (grid:Grid, pos: Position) =>{
-    return grid.hasOwnProperty(posHash(pos));
+    return grid.hasOwnProperty(posHash(pos)) && grid[posHash(pos)]===true;
 }
 
 export const rectGridConstructor = (width:number, height:number) => {
