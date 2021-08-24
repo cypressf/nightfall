@@ -231,13 +231,18 @@ export const gameSlice = createSlice({
             if (unit.positions.length > unit.stats.maxLength) {
                 unit.positions.shift();
             }
+            if (unit.movesUsed === unit.stats.movement) {
+                state.phase = "attack";
+            }
         },
         select: (state: GameState, action: PayloadAction<Position>) => {
             const activeUnits = getActivePlayerUnits(state);
             const selectedUnit = unitAt(action.payload, activeUnits);
             if (selectedUnit) {
-                state.phase = "move";
                 state.selectedUnit = selectedUnit.stats.id;
+                selectedUnit.movesUsed < selectedUnit.stats.maxLength ?
+                    state.phase = "move" :
+                    state.phase = "attack";
             }
         },
         reset: () => {
@@ -272,6 +277,7 @@ export const gameSlice = createSlice({
                 unit.attackUsed = false;
             };
             state.selectedUnit = getActivePlayerUnits(state)[0].stats.id;
+            state.phase = "move";
         },
         clickMove: (state: GameState) => {
             const selectedUnit = getSelectedUnit(state);
