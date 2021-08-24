@@ -19,7 +19,7 @@ const UnitInfo = ({ unit }: { unit: Unit }) =>
                     <td>{unit.stats.maxLength}</td>
                 </tr>
                 <tr>
-                    <th>Attack</th>
+                    <th>Attack strength</th>
                     <td>{unit.stats.attack}</td>
                 </tr>
             </tbody>
