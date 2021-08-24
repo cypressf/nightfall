@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/nightfall/static/css/main.b1c1af10.chunk.css",
-    "main.js": "/nightfall/static/js/main.1a0cdeec.chunk.js",
-    "main.js.map": "/nightfall/static/js/main.1a0cdeec.chunk.js.map",
+    "main.js": "/nightfall/static/js/main.a04338f1.chunk.js",
+    "main.js.map": "/nightfall/static/js/main.a04338f1.chunk.js.map",
     "runtime-main.js": "/nightfall/static/js/runtime-main.647033fa.js",
     "runtime-main.js.map": "/nightfall/static/js/runtime-main.647033fa.js.map",
     "static/js/2.1e9ddac8.chunk.js": "/nightfall/static/js/2.1e9ddac8.chunk.js",
@@ -15,6 +15,6 @@
     "static/js/runtime-main.647033fa.js",
     "static/js/2.1e9ddac8.chunk.js",
     "static/css/main.b1c1af10.chunk.css",
-    "static/js/main.1a0cdeec.chunk.js"
+    "static/js/main.a04338f1.chunk.js"
   ]
 }
