@@ -8,7 +8,13 @@ export const head = (unit: Unit) => {
   return unit.positions[unit.positions.length - 1];
 }
 
-export const isInRange = (attacker: Unit, target: Position) => {
+/**
+ * Given a attacker unit and a target position, can that unit attack that position?
+ * @param attacker 
+ * @param target 
+ * @returns 
+ */
+export const targetInRange = (attacker: Unit, target: Position) => {
   const attackerHead = head(attacker);
   return Math.abs(attackerHead.x - target.x) + Math.abs(attackerHead.y - target.y) <= attacker.stats.range;
 }
@@ -17,14 +23,23 @@ export const withinAttackRange = (attacker: Unit) => {
   return withinRange(head(attacker), attacker.stats.range);
 }
 
+/**
+ * Filter a list of positions to only those that are in the grid. This includes holes.  
+ */
 const inBounds = (positions: Position[], grid: Grid) => {
   return positions.filter(pos => inGrid(grid, pos));
 }
 
+/**
+ * Filter a list of positions to only those that do no overlap anything 
+ */
 const empty = (positions: Position[], units: Unit[]) => {
   return positions.filter(pos => !overlapsAnything(units, pos));
 }
 
+/**
+ * Filter a list of positions to only those that are not in the seen position list 
+ */
 const unseen = (positions: Position[], seenPos: Position[]) => {
   return positions.filter(pos => {
     //TODO: Eww, replace with set and hash/equals implementation
@@ -52,10 +67,18 @@ const withinRange = (position: Position, distance: number) => {
 
 const adjacent = (position: Position) => withinRange(position, 1);
 
-export const bfs = (mover: Unit, units: Unit[], grid: Grid) => {
+/**
+ * This has two types of operation. 
+ * If the target not null, the bfs just explores all valid positions within range and returns them in seenPos.
+ * If target is null, the bfs will try to explore to that position and output the path needed to get there, and if it was sucessful. 
+ * In target-defined mode, the seenPos will be less useful. 
+ */
+export const bfs = (mover: Unit, units: Unit[], grid: Grid, target?:Position) => {
+  const emptyPath: Position[] =[]; 
   const initialNode = {
     position: head(mover),
     movement: mover.stats.movement - mover.movesUsed,
+    path: emptyPath,
   }
   const queue = [initialNode];
   const seenPos: Position[] = [];
@@ -64,13 +87,20 @@ export const bfs = (mover: Unit, units: Unit[], grid: Grid) => {
   while (queue.length !== 0) {
     const nodeOrUndef = queue.shift();
     if (nodeOrUndef === undefined) {
-      return []; //Lets please the tyrannical typescript gods
+      //Because of the length!=0 check, the shift should always have one element. 
+      //This *should* be impossible to reach. 
+      //But lets please the tyrannical typescript gods
+      return {seenPos:[], path:[], reachTarget:false}; 
     } else {
       curNode = nodeOrUndef;
     }
 
     if (!posEquals(curNode.position, head(mover))) {
       seenPos.push(curNode.position);
+    }
+
+    if (target!=null && posEquals(target,curNode.position)){
+      return {seenPos, path:curNode.path, reachTarget:true}
     }
 
     if (curNode.movement === 0) {
@@ -83,12 +113,14 @@ export const bfs = (mover: Unit, units: Unit[], grid: Grid) => {
     const unseenPlaces = unseen(emptyPlaces, seenPos);
 
     for (const validPlace of unseenPlaces) {
+      const newPath = curNode.path.concat([validPlace]);
       const newNode = {
         position: validPlace,
         movement: curNode.movement - 1,
+        path: newPath
       }
       queue.push(newNode);
     }
   }
-  return seenPos;
+  return {seenPos, path:curNode.path, reachTarget:false};
 }

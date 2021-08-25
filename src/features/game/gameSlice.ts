@@ -1,7 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import Unit from "../unit/Unit";
 import { Position, posHash } from "./Position";
-import { bfs, head, isInRange, withinAttackRange } from "../search/Brain";
+import { bfs, head, targetInRange, withinAttackRange } from "../search/Brain";
 import { Grid, inGrid, rectGridConstructor } from "./Grid";
 import * as d3 from "d3-color";
 import { RootState } from "../../app/store";
@@ -144,7 +144,8 @@ export const generateGridColors = (
         gridColors[posHash(head(unit))] = headColor.toString();
     });
     if (selectedUnit && phase === "move") {
-        const validMovePositions = bfs(selectedUnit, units, grid);
+        const bfsResult = bfs(selectedUnit, units, grid);
+        const validMovePositions = bfsResult.seenPos;
         validMovePositions.forEach(position => {
             gridColors[posHash(position)] = VALID_MOVE_POSITION_COLOR;
         });
@@ -228,6 +229,7 @@ export const gameSlice = createSlice({
                 unit.positions.push(action.payload);
                 unit.movesUsed++;
             }
+            console.log(bfs(unit,units,state.grid,action.payload));
             if (unit.positions.length > unit.stats.maxLength) {
                 unit.positions.shift();
             }
@@ -256,7 +258,7 @@ export const gameSlice = createSlice({
                 return;
             }
             const attacker = state.units[state.selectedUnit];
-            if (attacker === target || attacker.attackUsed || !isInRange(attacker, targetPosition)) {
+            if (attacker === target || attacker.attackUsed || !targetInRange(attacker, targetPosition)) {
                 return;
             }
             attacker.attackUsed = true;
