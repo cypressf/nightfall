@@ -229,7 +229,6 @@ export const gameSlice = createSlice({
                 unit.positions.push(action.payload);
                 unit.movesUsed++;
             }
-            console.log(bfs(unit,units,state.grid,action.payload));
             if (unit.positions.length > unit.stats.maxLength) {
                 unit.positions.shift();
             }
