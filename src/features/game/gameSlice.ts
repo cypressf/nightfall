@@ -1,7 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import Unit from "../unit/Unit";
 import { Position, posHash } from "./Position";
-import { bfs, head, targetInRange, withinAttackRange } from "../search/Brain";
+import { unitBfs, head, targetInRange, positionsWithinUnitRange } from "../search/Brain";
 import { Grid, inGrid, rectGridConstructor } from "./Grid";
 import * as d3 from "d3-color";
 import { RootState } from "../../app/store";
@@ -23,9 +23,12 @@ const unitHeadColor = (hue: number) => {
     return d3.cubehelix(hue, UNIT_SATURATION + 0.2, UNIT_LIGHTNESS - 0.3).toString();
 }
 
+export type PlayerType = "human" | "ai";
+
 export type Player = {
     name: string;
     unitIds: string[];
+    type: PlayerType;
 }
 
 export type Phase = "move" | "attack" | "game over";
@@ -104,7 +107,7 @@ export const generateGridGlows = (selectedUnit: Unit | undefined, phase: Phase) 
         return gridGlows;
     }
     if (phase === "attack" && !selectedUnit.attackUsed) {
-        withinAttackRange(selectedUnit).forEach(position => {
+        positionsWithinUnitRange(selectedUnit).forEach(position => {
             gridGlows[posHash(position)] = VALID_ATTACK_POSITION_COLOR;
         });
     }
@@ -144,7 +147,7 @@ export const generateGridColors = (
         gridColors[posHash(head(unit))] = headColor.toString();
     });
     if (selectedUnit && phase === "move") {
-        const bfsResult = bfs(selectedUnit, units, grid);
+        const bfsResult = unitBfs(selectedUnit, units, grid);
         const validMovePositions = bfsResult.seenPos;
         validMovePositions.forEach(position => {
             gridColors[posHash(position)] = VALID_MOVE_POSITION_COLOR;
@@ -170,10 +173,12 @@ const initialState: GameState = {
         {
             name: "Jake",
             unitIds: ["a", "b"],
+            type: "ai",
         },
         {
             name: "Cypress",
             unitIds: ["c"],
+            type:"human",
         },
     ],
 };
