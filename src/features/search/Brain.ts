@@ -23,77 +23,6 @@ export const manDistance = (pos1: Position, pos2 : Position) => {
   return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y)
 }
 
-export const closePositionBetweenUnits= (unit1: Unit, unit2:Unit)=> {
-  const unit1Head = head(unit1);
-  let minDis = Infinity;
-  let minPos = null;
-  for (const pos of unit2.positions){
-    const dis=manDistance(unit1Head, pos);
-    if (dis<minDis){
-      minDis=dis;
-      minPos=pos;
-    }
-  }
-  return {minPos, minDis};
-}
-
-//Given units 1 and 2, find the shortest path from 1 to any part on 2.
-export const shortestPathToUnit = (unit1:Unit, unit2:Unit, units: Unit[], grid: Grid) =>{
-  const unit1Head = head(unit1);
-  let minDis = Infinity;
-  let minPath = null;
-  for (const pos of unit2.positions){
-    const bfsInfo=pathBfs(unit1Head, pos, units, grid);
-    if (!bfsInfo.reachTarget){
-      //Unreachable. There are some interesting geometries where one position of a unit is unreachable but another is not.
-      continue;
-    }
-    const dis=bfsInfo.path.length;
-    if (dis < minDis){
-      minDis=dis;
-      minPath=bfsInfo.path;
-    }
-  }
-  return minPath;
-}
-
-/**
- * Using both movement and attack range if needed, determine what one unit could do to another, with details of move and attack positions
- */
- export const moveInfo=(attacker: Unit, defender: Unit, units:Unit[], grid:Grid ) =>{
-  const {minPos, minDis}= closePositionBetweenUnits(attacker,defender);
-  const dmg=attacker.stats.attack;
-  const canKill = unfortunateOne.positions.length-dmg <= 0;
-  if (minDis <= attacker.stats.range){
-    //Can hit without movement
-    return {minDis, canKill, movePos:null, atkPos:minPos, dmg:attacker.stats.attack}
-  }else{
-    //Might need to move first. Step 1, find the shortest path to the enemy unit.
-    //The closest segment might not be reachable so we have to bfs all positions
-    const shortestPath = shortestPathToUnit(attacker, defender, units, grid);
-    if (shortestPath==undefined){
-      //There is no path to the unit and can't hit it with just range. 
-      //There is a edge case here where the enemy is on an island and you just want to get close enough to fire at them. 
-      return {minDis:Infinity,canKill:false,movePos:null,atkPos:null,dmg:0};
-    }
-    
-  }
- }
-
-/**
- * If unit can hit another, return the min distance and pos to the second, otherwise return null
- */
-export const moveInfo=(attacker: Unit, unfortunateOne: Unit) =>{
-  const {minDis, minPos} = closePositionBetweenUnits(attacker,unfortunateOne);
-  if (minDis <= attacker.stats.range){
-    const dmg=attacker.stats.attack;
-    const canKill = unfortunateOne.positions.length-dmg <= 0;
-    return {minPos, minDis, canKill, dmg:attacker.stats.attack};
-  }else{
-    return null;
-  }
-}
-
 export const positionsWithinUnitRange = (attacker: Unit) => {
   return positionsWithinRange(head(attacker), attacker.stats.range);
 }
@@ -142,19 +71,27 @@ const positionsWithinRange = (position: Position, distance: number) => {
 
 const adjacent = (position: Position) => positionsWithinRange(position, 1);
 
-export const aiTurn = (aiUnits: Unit[], enemyUnits:Unit[]) =>{
-  //Make a 'mapping' of which units can hit which other units.
+
+
+export const aiSubTurn = (aiUnits: Unit[], enemyUnits:Unit[], units: Unit[], grid:Grid) =>{
+  //Make a 'mapping' of which units can hit which other units and how.
   const whoCanHitWhat=[];
   for(const aiUnit of aiUnits){
     for(const enemyUnit of enemyUnits){
-      const canHitInfo = 
+      const {minPath, minPos}=unitFirePathBfs(aiUnit, enemyUnit, units, grid);
+      const possibleAction = {
+        attacker: aiUnit,
+        defender: enemyUnit,
+        minPath: minPath, 
+        minPos: minPos,
+      }
       whocanHitWhat
     }
     canUnitHitUnit
   }
 }
 
-const activePlayerUnits = useSelector(selectActivePlayerUnits);
+// const activePlayerUnits = useSelector(selectActivePlayerUnits);
 
 //Generally find a path between a start and target position, without any max length.
 export const pathBfs = (start:Position,target:Position, units: Unit[], grid: Grid) =>{
@@ -166,13 +103,27 @@ export const unitBfs = (mover: Unit, units: Unit[], grid: Grid, target?:Position
   return bfsHelper(head(mover),mover.stats.movement - mover.movesUsed,units,grid,target)
 } 
 
+//Given an attacking unit and a defending unit, how does the attacker path to within firing range of the defender?
+export const unitFirePathBfs = (attacker: Unit, defender: Unit, units: Unit[], grid: Grid)=>{
+  let minPath=null;
+  let minPos= null;
+   for (const targetPos of defender.positions){
+    const {seenPos, path, reachTarget}=bfsHelper(head(attacker), attacker.stats.movement - attacker.movesUsed, units, grid, targetPos, attacker.stats.range);
+    if (reachTarget && path !== undefined && (minPath==null || path.length < minPath.length)){
+      minPath =  path;
+      minPos  = targetPos;
+    }
+   }
+   return {minPath, minPos};
+}
+
 /**
  * This has two types of operation. 
  * If the target not null, the bfs just explores all valid positions within range and returns them in seenPos.
  * If target is null, the bfs will try to explore to that position and output the path needed to get there, and if it was sucessful. 
  * In target-defined mode, the seenPos will be less useful. 
  */
-export const bfsHelper = (start:Position, maxPathLength:number, units: Unit[], grid: Grid, target?:Position) => {
+export const bfsHelper = (start:Position, maxPathLength:number, units: Unit[], grid: Grid, target?:Position, targetDistance:number=0) => {
   const emptyPath: Position[] =[]; 
   const initialNode = {
     position: start,
@@ -198,7 +149,7 @@ export const bfsHelper = (start:Position, maxPathLength:number, units: Unit[], g
       seenPos.push(curNode.position);
     }
 
-    if (target!=null && posEquals(target,curNode.position)){
+    if (target!=null && manDistance(target,curNode.position) <= targetDistance){
       return {seenPos, path:curNode.path, reachTarget:true}
     }
 
