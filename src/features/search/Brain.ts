@@ -1,6 +1,6 @@
 import Unit from "../unit/Unit";
 import { Position, posEquals } from "../game/Position";
-import { overlapsAnything } from "../game/gameSlice";
+import { GameState, overlapsAnything } from "../game/gameSlice";
 import { Grid, inGrid } from "../game/Grid";
 
 
@@ -73,22 +73,63 @@ const adjacent = (position: Position) => positionsWithinRange(position, 1);
 
 
 
-export const aiSubTurn = (aiUnits: Unit[], enemyUnits:Unit[], units: Unit[], grid:Grid) =>{
-  //Make a 'mapping' of which units can hit which other units and how.
-  const whoCanHitWhat=[];
-  for(const aiUnit of aiUnits){
-    for(const enemyUnit of enemyUnits){
-      const {minPath, minPos}=unitFirePathBfs(aiUnit, enemyUnit, units, grid);
-      const possibleAction = {
-        attacker: aiUnit,
-        defender: enemyUnit,
-        minPath: minPath, 
-        minPos: minPos,
+export const aiSubTurn = (aiUnits: Unit[], enemyUnits:Unit[], units: Unit[], grid:Grid, state: GameState, moveAction : any, selectAction : any, attackAction : any, endTurnAction: any) =>{
+  //TODO: This is a pretty crap allocation strategy, do some thinking about a better one.
+  //orrrr, make it more deterministic as to how the ai will attack, like a puzzle.
+
+  //So for now, it just goes through the enemies and tries to assign one of its units to attack it. 
+  //The 'best' choice is the one which is closest, for now. If no ai units can reach the enemy it doesn't move them. 
+  //This is wrong in so many ways. 
+  const usedAiUnitIds: string[] = [];
+  for(const enemyUnit of enemyUnits){
+    let aiUnitToUse = null;
+    let pathLengthToUse =Infinity;
+    let targetPosToUse = null;
+    let pathToUse=null;
+    for(const aiUnit of aiUnits){
+      if (aiUnit.attackUsed || usedAiUnitIds.includes(aiUnit.stats.id)){
+        //We only want units who can fire. Movement checking is handled by the bfs
+        continue;
       }
-      whocanHitWhat
+      const {minPath, bestTargetPos}=unitFirePathBfs(aiUnit, enemyUnit, units, grid);
+      if (minPath !=null && bestTargetPos !=null && minPath.length<pathLengthToUse){
+        aiUnitToUse=aiUnit;
+        pathLengthToUse=minPath.length;
+        targetPosToUse = bestTargetPos;
+        pathToUse = minPath;
+        usedAiUnitIds.push(aiUnit.stats.id)
+      }
     }
-    canUnitHitUnit
+
+    if (aiUnitToUse!=null){
+      //I'd really like to package the choices here into an object to compare them against each other. 
+      //However, that would necessitate making a kind of hypothetical game state, since one ai move affects another 
+      // (you can't move where the tail of another unit is going to move)
+      //I think deep copying the game state, or keeping marginal bookkeeping might be how to do this, but its too much to bite off for now.
+      //If we ever want a more sophesticated algo, here is where things will get interesting. 
+
+      //Instead, just do the best thing right now! 
+
+      //Step 1: select unit
+      selectAction(state, {payload:aiUnitToUse.positions[0]});
+
+      //Step 2: Possibly move unit
+      if (pathToUse!=null){
+        state.phase="move";
+        for(const pos of pathToUse){
+          moveAction(state,{payload:pos});
+        }
+      }
+
+      //Step 3: Possibly attack
+      if (targetPosToUse!=null){ 
+        state.phase="attack";
+        attackAction(state,{payload:targetPosToUse});
+      }
+    }
   }
+  //Step 4: Profit
+  endTurnAction(state);
 }
 
 // const activePlayerUnits = useSelector(selectActivePlayerUnits);
@@ -106,15 +147,15 @@ export const unitBfs = (mover: Unit, units: Unit[], grid: Grid, target?:Position
 //Given an attacking unit and a defending unit, how does the attacker path to within firing range of the defender?
 export const unitFirePathBfs = (attacker: Unit, defender: Unit, units: Unit[], grid: Grid)=>{
   let minPath=null;
-  let minPos= null;
+  let bestTargetPos= null;
    for (const targetPos of defender.positions){
     const {seenPos, path, reachTarget}=bfsHelper(head(attacker), attacker.stats.movement - attacker.movesUsed, units, grid, targetPos, attacker.stats.range);
     if (reachTarget && path !== undefined && (minPath==null || path.length < minPath.length)){
       minPath =  path;
-      minPos  = targetPos;
+      bestTargetPos  = targetPos;
     }
    }
-   return {minPath, minPos};
+   return {minPath, bestTargetPos};
 }
 
 /**

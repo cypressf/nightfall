@@ -3,7 +3,7 @@ import { useSelector } from "react-redux"
 import { useAppDispatch } from "../../app/hooks";
 import { RootState } from "../../app/store";
 import styles from './Game.module.css';
-import { endTurn, reset, selectSelectedUnit, getGridGlows, getGridColors, selectActivePlayer, Phase, clickAttack, clickMove } from "./gameSlice";
+import { endTurn, reset, selectSelectedUnit, getGridGlows, getGridColors, selectActivePlayer, Phase, clickAttack, clickMove, aiTurn } from "./gameSlice";
 import { Grid, gridDimensions, positionOfGrid } from "./Grid";
 import { GridCell } from "./GridCell";
 import { posHash } from "./Position";
@@ -48,13 +48,13 @@ export function Game() {
                 <h1>
                     {activePlayer.name}:
                     {
-                        phase === "move" &&
+                        phase === "move" && activePlayer.type==="human" &&
                         <button
                             onClick={() => dispatch(clickAttack())}
                             className={styles.button}>Attack</button>
                     }
                     {
-                        phase === "attack" && selectedUnit &&
+                        phase === "attack" && activePlayer.type==="human"  && selectedUnit &&
                         <button
                             onClick={() => dispatch(clickMove())}
                             className={styles.button}
@@ -62,9 +62,20 @@ export function Game() {
                             Move
                         </button>
                     }
-                    <button
-                        onClick={() => dispatch(endTurn())}
-                        className={styles.button}>End Turn</button>
+                    {
+                        activePlayer.type==="ai" &&
+                        <button 
+                            onClick={()=>dispatch(aiTurn(activePlayer))}
+                            className={styles.button}>
+                            Ai Turn
+                        </button>
+                    }
+                    {
+                        activePlayer.type==="human"  &&
+                        <button
+                            onClick={() => dispatch(endTurn())}
+                            className={styles.button}>End Turn</button>
+                    }
 
                 </h1>
             }
