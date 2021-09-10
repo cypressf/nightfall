@@ -43,6 +43,98 @@ export interface GameState {
     players: Player[];
 };
 
+const defaultUnits2 : Unit[] =[{
+    positions: [{ x: 0, y: 0 }],
+    movesUsed: 0,
+    attackUsed: false,
+    stats:{
+        name: "3Range",
+        maxLength: 1,
+        range: 3,
+        movement: 2,
+        attack: 1,
+        color: unitColor(0),
+        headColor: unitHeadColor(0),
+        id: "a",
+    }
+},
+{
+    positions: [{ x: 0, y: 2 }],
+    movesUsed: 0,
+    attackUsed: false,
+    stats:{
+        name: "2Range",
+        maxLength: 1,
+        range: 2,
+        movement: 2,
+        attack: 1,
+        color: unitColor(30),
+        headColor: unitHeadColor(30),
+        id: "b",
+    }
+},
+{
+    positions: [{ x: 0, y: 4 }],
+    movesUsed: 0,
+    attackUsed: false,
+    stats:{
+        name: "1Range",
+        maxLength: 1,
+        range: 1,
+        movement: 2,
+        attack: 1,
+        color: unitColor(60),
+        headColor: unitHeadColor(60),
+        id: "c",
+    }
+},
+{
+    positions: [{ x: 3, y: 0 },{x:4,y:0},{x:5,y:0}],
+    movesUsed: 0,
+    attackUsed: false,
+    stats:{
+        name: "1Target",
+        maxLength: 3,
+        range: 1,
+        movement: 1,
+        attack: 1,
+        color: unitColor(500),
+        headColor: unitHeadColor(500),
+        id: "x",
+    }
+},
+{
+    positions: [{ x: 3, y: 2 },{x:4,y:2},{x:5,y:2}],
+    movesUsed: 0,
+    attackUsed: false,
+    stats:{
+        name: "2Target",
+        maxLength: 3,
+        range: 1,
+        movement: 1,
+        attack: 1,
+        color: unitColor(530),
+        headColor: unitHeadColor(530),
+        id: "y",
+    }
+},
+{
+    positions: [{ x: 3, y: 4 },{x:4,y:4},{x:5,y:4}],
+    movesUsed: 0,
+    attackUsed: false,
+    stats:{
+        name: "3Target",
+        maxLength: 3,
+        range: 1,
+        movement: 1,
+        attack: 1,
+        color: unitColor(560),
+        headColor: unitHeadColor(560),
+        id: "z",
+    }
+},
+]
+
 const defaultUnits: Unit[] = [{
     positions: [{ x: 0, y: 0 }],
     movesUsed: 0,
@@ -159,7 +251,7 @@ export const generateGridColors = (
 const initialGrid = rectGridConstructor(10, 10);
 initialGrid["6-6"] = false;
 initialGrid["6-5"] = false;
-const initialUnits = defaultUnits.reduce((map: { [key: string]: Unit }, unit) => {
+const initialUnits = defaultUnits2.reduce((map: { [key: string]: Unit }, unit) => {
     map[unit.stats.id] = unit;
     return map;
 }, {});
@@ -172,12 +264,12 @@ const initialState: GameState = {
     players: [
         {
             name: "Jake",
-            unitIds: ["a", "b"],
+            unitIds: ["a", "b", "c"],
             type: "ai",
         },
         {
             name: "Cypress",
-            unitIds: ["c"],
+            unitIds: ["x","y","z"],
             type:"human",
         },
     ],
