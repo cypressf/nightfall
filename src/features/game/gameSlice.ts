@@ -1,7 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import Unit from "../unit/Unit";
 import { Position, posHash } from "./Position";
-import { generateGridInfo, isInRange, withinAttackRange } from "../search/Brain";
+import { generateGridInfo, unitBfs, head, targetInRange, positionsWithinUnitRange, aiSubTurn } from "../search/Brain";
 import { Grid, inGrid, rectGridConstructor } from "./Grid";
 import * as d3 from "d3-color";
 import { RootState } from "../../app/store";
@@ -17,9 +17,12 @@ const unitHeadColor = (hue: number) => {
     return d3.cubehelix(hue, UNIT_SATURATION + 0.2, UNIT_LIGHTNESS - 0.3).toString();
 }
 
+export type PlayerType = "human" | "ai";
+
 export type Player = {
     name: string;
     unitIds: string[];
+    type: PlayerType;
 }
 
 export type Phase = "move" | "attack" | "game over";
@@ -33,6 +36,98 @@ export interface GameState {
     phase: Phase;
     players: Player[];
 };
+
+const defaultUnits2 : Unit[] =[{
+    positions: [{ x: 0, y: 0 }],
+    movesUsed: 0,
+    attackUsed: false,
+    stats:{
+        name: "3Range",
+        maxLength: 1,
+        range: 3,
+        movement: 2,
+        attack: 1,
+        color: unitColor(0),
+        headColor: unitHeadColor(0),
+        id: "a",
+    }
+},
+{
+    positions: [{ x: 0, y: 2 }],
+    movesUsed: 0,
+    attackUsed: false,
+    stats:{
+        name: "2Range",
+        maxLength: 1,
+        range: 2,
+        movement: 2,
+        attack: 1,
+        color: unitColor(30),
+        headColor: unitHeadColor(30),
+        id: "b",
+    }
+},
+{
+    positions: [{ x: 0, y: 4 }],
+    movesUsed: 0,
+    attackUsed: false,
+    stats:{
+        name: "1Range",
+        maxLength: 1,
+        range: 1,
+        movement: 2,
+        attack: 1,
+        color: unitColor(60),
+        headColor: unitHeadColor(60),
+        id: "c",
+    }
+},
+{
+    positions: [{ x: 3, y: 0 },{x:4,y:0},{x:5,y:0}],
+    movesUsed: 0,
+    attackUsed: false,
+    stats:{
+        name: "1Target",
+        maxLength: 3,
+        range: 1,
+        movement: 1,
+        attack: 1,
+        color: unitColor(500),
+        headColor: unitHeadColor(500),
+        id: "x",
+    }
+},
+{
+    positions: [{ x: 3, y: 2 },{x:4,y:2},{x:5,y:2}],
+    movesUsed: 0,
+    attackUsed: false,
+    stats:{
+        name: "2Target",
+        maxLength: 3,
+        range: 1,
+        movement: 1,
+        attack: 1,
+        color: unitColor(530),
+        headColor: unitHeadColor(530),
+        id: "y",
+    }
+},
+{
+    positions: [{ x: 3, y: 4 },{x:4,y:4},{x:5,y:4}],
+    movesUsed: 0,
+    attackUsed: false,
+    stats:{
+        name: "3Target",
+        maxLength: 3,
+        range: 1,
+        movement: 1,
+        attack: 1,
+        color: unitColor(560),
+        headColor: unitHeadColor(560),
+        id: "z",
+    }
+},
+]
 
 const defaultUnits: Unit[] = [{
     positions: [{ x: 0, y: 0 }],
@@ -106,7 +201,7 @@ export type GridInfo = {
 const initialGrid = rectGridConstructor(10, 10);
 initialGrid["6-6"] = false;
 initialGrid["6-5"] = false;
-const initialUnits = defaultUnits.reduce((map: { [key: string]: Unit }, unit) => {
+const initialUnits = defaultUnits2.reduce((map: { [key: string]: Unit }, unit) => {
     map[unit.stats.id] = unit;
     return map;
 }, {});
@@ -119,11 +214,13 @@ const initialState: GameState = {
     players: [
         {
             name: "Jake",
-            unitIds: ["a", "b"],
+            unitIds: ["a", "b", "c"],
+            type: "ai",
         },
         {
             name: "Cypress",
-            unitIds: ["c"],
+            unitIds: ["x","y","z"],
+            type:"human",
         },
     ],
 };
@@ -162,74 +259,88 @@ export const unitAt = (position: Position, units: Unit[]) => {
     }
 }
 
+const moveAction =  (state: GameState, action: PayloadAction<Position>) => {
+    if (state.phase !== "move" || state.selectedUnit === undefined) {
+        return;
+    }
+    const unit = state.units[state.selectedUnit];
+    if (unit.movesUsed >= unit.stats.movement) {
+        return;
+    }
+    const units = getUnitList(state);
+    if (locationValid(state.grid, units, unit, action.payload)) {
+        unit.positions.push(action.payload);
+        unit.movesUsed++;
+    }
+    if (unit.positions.length > unit.stats.maxLength) {
+        unit.positions.shift();
+    }
+    if (unit.movesUsed === unit.stats.movement) {
+        state.phase = "attack";
+    }
+};
+
+const selectAction =  (state: GameState, action: PayloadAction<Position>) => {
+    const activeUnits = getActivePlayerUnits(state);
+    const selectedUnit = unitAt(action.payload, activeUnits);
+    if (selectedUnit) {
+        state.selectedUnit = selectedUnit.stats.id;
+        selectedUnit.movesUsed < selectedUnit.stats.maxLength ?
+            state.phase = "move" :
+            state.phase = "attack";
+    }
+};
+
+const attackAction = (state: GameState, action: PayloadAction<Position>) => {
+    const targetPosition = action.payload;
+    const enemyUnits = getEnemyUnits(state);
+    const target = unitAt(targetPosition, enemyUnits);
+    if (state.phase !== "attack" || state.selectedUnit === undefined || !target) {
+        return;
+    }
+    const attacker = state.units[state.selectedUnit];
+    if (attacker === target || attacker.attackUsed || !targetInRange(attacker, targetPosition)) {
+        return;
+    }
+    attacker.attackUsed = true;
+    if (attacker.stats.attack >= target.positions.length) {
+        delete state.units[target.stats.id];
+        deleteDeadPlayers(state);
+        if (state.players.length < 2) {
+            state.winner = state.players[0].name;
+            state.phase = "game over";
+        }
+    }
+    target.positions.splice(0, attacker.stats.attack);
+};
+
+const endTurnAction = (state: GameState) => {
+    state.turn++;
+    for (const unit of getUnitList(state)) {
+        unit.movesUsed = 0;
+        unit.attackUsed = false;
+    };
+    state.selectedUnit = getActivePlayerUnits(state)[0].stats.id;
+    state.phase = "move";
+};
+
 export const gameSlice = createSlice({
     name: 'game',
     initialState,
     reducers: {
-        move: (state: GameState, action: PayloadAction<Position>) => {
-            if (state.phase !== "move" || state.selectedUnit === undefined) {
-                return;
-            }
-            const unit = state.units[state.selectedUnit];
-            if (unit.movesUsed >= unit.stats.movement) {
-                return;
-            }
-            const units = getUnitList(state);
-            if (locationValid(state.grid, units, unit, action.payload)) {
-                unit.positions.push(action.payload);
-                unit.movesUsed++;
-            }
-            if (unit.positions.length > unit.stats.maxLength) {
-                unit.positions.shift();
-            }
-            if (unit.movesUsed === unit.stats.movement) {
-                state.phase = "attack";
-            }
-        },
-        select: (state: GameState, action: PayloadAction<Position>) => {
+        aiTurn: (state: GameState, action: PayloadAction<Player>) =>{
             const activeUnits = getActivePlayerUnits(state);
-            const selectedUnit = unitAt(action.payload, activeUnits);
-            if (selectedUnit) {
-                state.selectedUnit = selectedUnit.stats.id;
-                selectedUnit.movesUsed < selectedUnit.stats.maxLength ?
-                    state.phase = "move" :
-                    state.phase = "attack";
-            }
+            const enemyUnits = getEnemyUnits(state);
+            const units = getUnitList(state);
+            aiSubTurn(activeUnits, enemyUnits, units, state.grid, state, moveAction, selectAction, attackAction, endTurnAction);
         },
+        move: moveAction,
+        select:selectAction,
         reset: () => {
             return initialState;
         },
-        attack: (state: GameState, action: PayloadAction<Position>) => {
-            const targetPosition = action.payload;
-            const enemyUnits = getEnemyUnits(state);
-            const target = unitAt(targetPosition, enemyUnits);
-            if (state.phase !== "attack" || state.selectedUnit === undefined || !target) {
-                return;
-            }
-            const attacker = state.units[state.selectedUnit];
-            if (attacker === target || attacker.attackUsed || !isInRange(attacker, targetPosition)) {
-                return;
-            }
-            attacker.attackUsed = true;
-            if (attacker.stats.attack >= target.positions.length) {
-                delete state.units[target.stats.id];
-                deleteDeadPlayers(state);
-                if (state.players.length < 2) {
-                    state.winner = state.players[0].name;
-                    state.phase = "game over";
-                }
-            }
-            target.positions.splice(0, attacker.stats.attack);
-        },
-        endTurn: (state: GameState) => {
-            state.turn++;
-            for (const unit of getUnitList(state)) {
-                unit.movesUsed = 0;
-                unit.attackUsed = false;
-            };
-            state.selectedUnit = getActivePlayerUnits(state)[0].stats.id;
-            state.phase = "move";
-        },
+        attack: attackAction,
+        endTurn: endTurnAction,
         clickMove: (state: GameState) => {
             const selectedUnit = getSelectedUnit(state);
             if (selectedUnit && selectedUnit.movesUsed < selectedUnit.stats.movement) {
@@ -245,7 +356,7 @@ export const gameSlice = createSlice({
     },
 });
 
-export const { move, select, attack, reset, endTurn, clickMove, clickAttack } = gameSlice.actions;
+export const { aiTurn, move, select, attack, reset, endTurn, clickMove, clickAttack } = gameSlice.actions;
 
 // Getters
 const getUnitList = (state: GameState) => Object.values(state.units);
