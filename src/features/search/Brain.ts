@@ -301,7 +301,7 @@ export const generateGridInfo = (
         unit: unit,
         unitType: isActivePlayerUnit ? "ally" : "enemy",
         unitSelected: isSelected(position, selectedUnit),
-        unitHead: i === 0,
+        unitHead: posEquals(head(unit), position),
         unitLink: undefined, // TODO
         showImmediateMove: undefined, // TODO
       };
