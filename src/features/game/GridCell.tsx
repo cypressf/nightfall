@@ -1,4 +1,4 @@
-import { attack, move, select, Phase, GridInfo } from "./gameSlice";
+import { attack, move, select, Phase, GridInfo} from "./gameSlice";
 import { useAppDispatch } from "../../app/hooks";
 import * as d3 from "d3-color";
 
@@ -80,10 +80,23 @@ export const GridCell = (
 
     };
 
+    // A square is clickable if it is a valid attack square, a unit, or a valid movement space.
+    // It should be a cursor if its your unit or a move square
+    // it should be a cross hair if its a targetable enemy unit
+    let cursorStyle ="default";
+    if (showImmediateMove){
+        cursorStyle ="pointer";
+    }else if (unit && unitType==="ally"){
+        cursorStyle ="pointer";
+    }else if(showAttackHighlight && unit && unitType==="enemy"){
+        cursorStyle="crosshair";
+    }
+
     const style = {
         backgroundColor: color,
         boxShadow: glowColor ? "0px 0px 10px" + glowColor : undefined,
         transition: "background-color 0.2s",
+        cursor: cursorStyle,
     };
     return <div
         style={style}
