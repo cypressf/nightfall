@@ -9,7 +9,6 @@ import {
   Player,
 } from "../game/gameSlice";
 import { Grid, inGrid } from "../game/Grid";
-import { isIndexSignatureDeclaration } from "typescript";
 
 export const head = (unit: Unit) => {
   return unit.positions[unit.positions.length - 1];
@@ -194,7 +193,7 @@ export const unitFirePathBfs = (
   let minPath = null;
   let bestTargetPos = null;
   for (const targetPos of defender.positions) {
-    const { seenPos, path, reachTarget } = bfsHelper(
+    const { path, reachTarget } = bfsHelper(
       head(attacker),
       attacker.stats.movement - attacker.movesUsed,
       units,
