@@ -1,5 +1,4 @@
-import { attack, move, select, Phase, GridInfo, selectActivePlayerUnits, selectEnemyUnits } from "./gameSlice";
-import { useSelector } from "react-redux"
+import { attack, move, select, Phase, GridInfo} from "./gameSlice";
 import { useAppDispatch } from "../../app/hooks";
 import * as d3 from "d3-color";
 
@@ -20,9 +19,6 @@ export const GridCell = (
     }: Props
 ) => {
     const dispatch = useAppDispatch();
-
-    const activePlayerUnitIds = useSelector(selectActivePlayerUnits).map((unit)=>unit.stats.id);
-    const enemyPlayerUnitUds = useSelector(selectEnemyUnits).map((unit)=>unit.stats.id);
 
     if (!gridInfo) {
         return <div style={{ transition: "background-color 0.2s" }}></div>
@@ -90,9 +86,9 @@ export const GridCell = (
     let cursorStyle ="default";
     if (showImmediateMove){
         cursorStyle ="pointer";
-    }else if (unit && activePlayerUnitIds.includes(unit.stats.id)){
+    }else if (unit && unitType==="ally"){
         cursorStyle ="pointer";
-    }else if(showAttackHighlight && unit && enemyPlayerUnitUds.includes(unit.stats.id)){
+    }else if(showAttackHighlight && unit && unitType==="enemy"){
         cursorStyle="crosshair";
     }
 
