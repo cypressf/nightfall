@@ -7,6 +7,7 @@ import {
   overlapsAnything,
   Phase,
   Player,
+  select,
 } from "../game/gameSlice";
 import { Grid, inGrid } from "../game/Grid";
 
@@ -313,6 +314,24 @@ export const generateGridInfo = (
           position,
           showMoveHighlight: true,
         };
+      });
+      const unitHead = head(selectedUnit);
+      const { seenPos: immediateMoves } = bfsHelper(
+        unitHead,
+        Math.min(selectedUnit.stats.movement - selectedUnit.movesUsed, 1),
+        units,
+        grid
+      );
+      immediateMoves.forEach((position) => {
+        if (position.x > unitHead.x) {
+          gridInfo[posHash(position)].showImmediateMove = "right";
+        } else if (position.x < unitHead.x) {
+          gridInfo[posHash(position)].showImmediateMove = "left";
+        } else if (position.y > unitHead.y) {
+          gridInfo[posHash(position)].showImmediateMove = "down";
+        } else if (position.y < unitHead.y) {
+          gridInfo[posHash(position)].showImmediateMove = "up";
+        }
       });
     }
     if (selectedUnit && phase === "attack" && !selectedUnit.attackUsed) {
