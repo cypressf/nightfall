@@ -1,31 +1,74 @@
-import { attack, move, select, unitAt, selectUnitList, Phase, selectActivePlayerUnits } from "./gameSlice";
+import { attack, move, select, Phase, GridInfo } from "./gameSlice";
 import { useAppDispatch } from "../../app/hooks";
-import { Position } from "./Position";
-import { useSelector } from "react-redux";
-import Unit from "../unit/Unit";
+import * as d3 from "d3-color";
 
+const SELECTED_COLOR = "#384bfa";
+const VALID_MOVE_POSITION_COLOR = "rgb(201, 230, 253)";
+const VALID_ATTACK_POSITION_COLOR = "#ff0000";
+const DEFAULT_COLOR = "rgb(240, 240, 240)";
 
 type Props = {
-    position: Position,
-    color?: string,
-    glowColor?: string,
+    gridInfo: GridInfo | undefined,
     phase: Phase,
 };
 
-const isEmpty = (position: Position, units: Unit[]) => unitAt(position, units) === undefined;
-
-export const GridCell = ({ position, color, glowColor, phase }: Props) => {
+export const GridCell = (
+    {
+        gridInfo,
+        phase,
+    }: Props
+) => {
     const dispatch = useAppDispatch();
-    const units = useSelector(selectUnitList);
-    const activePlayerUnits = useSelector(selectActivePlayerUnits);
+
+    if (!gridInfo) {
+        return <div style={{ transition: "background-color 0.2s" }}></div>
+    }
+    const {
+        position,
+        unit,
+        unitType,
+        unitSelected,
+        unitHead,
+        unitLink,
+        showMoveHighlight,
+        showAttackHighlight,
+        showImmediateMove,
+    } = gridInfo;
+    let color: string;
+    let glowColor: string | undefined = undefined;
+    if (unit) {
+        const modifiableColor = unitHead ?
+            d3.cubehelix(unit.stats.headColor)! :
+            d3.cubehelix(unit.stats.color)!;
+
+        if (unitType === "enemy") {
+            if (unitHead) {
+                modifiableColor.s *= 0.2;
+                modifiableColor.l *= 1.5;
+            } else {
+                modifiableColor.s *= 0.2;
+            }
+        }
+        color = modifiableColor.toString();
+        if (unitSelected) {
+            glowColor = SELECTED_COLOR;
+        }
+    } else if (showMoveHighlight) {
+        color = VALID_MOVE_POSITION_COLOR;
+    } else {
+        color = DEFAULT_COLOR;
+    }
+    if (showAttackHighlight) {
+        glowColor = VALID_ATTACK_POSITION_COLOR;
+    }
+
     const handleClick = () => {
-        const unit = unitAt(position, units);
-        if (unit && activePlayerUnits.includes(unit)) {
+        if (unit && unitType === "ally") {
             dispatch(select(position));
         } else {
             switch (phase) {
                 case "move":
-                    if (isEmpty(position, units)) {
+                    if (!unit) {
                         dispatch(move(position));
                     }
                     break;
@@ -36,6 +79,7 @@ export const GridCell = ({ position, color, glowColor, phase }: Props) => {
         }
 
     };
+
     const style = {
         backgroundColor: color,
         boxShadow: glowColor ? "0px 0px 10px" + glowColor : undefined,

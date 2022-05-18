@@ -1,16 +1,10 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import Unit from "../unit/Unit";
 import { Position, posHash } from "./Position";
-import { bfs, head, isInRange, withinAttackRange } from "../search/Brain";
+import { generateGridInfo, isInRange, withinAttackRange } from "../search/Brain";
 import { Grid, inGrid, rectGridConstructor } from "./Grid";
 import * as d3 from "d3-color";
 import { RootState } from "../../app/store";
-
-
-const SELECTED_COLOR = "#384bfa";
-const VALID_MOVE_POSITION_COLOR = "rgb(201, 230, 253)";
-const VALID_ATTACK_POSITION_COLOR = "#ff0000";
-const GAP_COLOR = "#ffffff";
 
 const UNIT_LIGHTNESS = 0.6; // 0 to 1
 const UNIT_SATURATION = 1; // 0 to 2
@@ -95,61 +89,18 @@ export const isSelected = (position: Position, selectedUnit: Unit | undefined) =
     );
 }
 
-/**
-  Returns a map of {PosHashStr:glowColorStr}
-*/
-export const generateGridGlows = (selectedUnit: Unit | undefined, phase: Phase) => {
-    const gridGlows: { [key: string]: string } = {};
-    if (!selectedUnit) {
-        return gridGlows;
-    }
-    if (phase === "attack" && !selectedUnit.attackUsed) {
-        withinAttackRange(selectedUnit).forEach(position => {
-            gridGlows[posHash(position)] = VALID_ATTACK_POSITION_COLOR;
-        });
-    }
-    selectedUnit.positions.forEach(position => {
-        gridGlows[posHash(position)] = SELECTED_COLOR;
-    });
-    return gridGlows;
-}
+export type Direction = "up" | "down" | "left" | "right";
 
-export const generateGridColors = (
-    selectedUnit: Unit | undefined,
-    phase: Phase,
-    units: Unit[],
-    grid: Grid,
-    activePlayer: Player,
-) => {
-    const gridColors: { [key: string]: string } = {};
-
-    Object.entries(grid).filter(([key, val]) => !val).forEach(([key, val]) => {
-        gridColors[key] = GAP_COLOR;
-    });
-
-    units.forEach(unit => {
-        const isActivePlayerUnit = activePlayer.unitIds.includes(unit.stats.id);
-        const color = d3.cubehelix(unit.stats.color)!;
-        const headColor = d3.cubehelix(unit.stats.headColor)!;
-
-        if (!isActivePlayerUnit) {
-            color.s *= 0.2;
-            headColor.s *= 0.2;;
-            headColor.l *= 1.5;
-        }
-
-        unit.positions.forEach(position => {
-            gridColors[posHash(position)] = color.toString();
-        });
-        gridColors[posHash(head(unit))] = headColor.toString();
-    });
-    if (selectedUnit && phase === "move") {
-        const validMovePositions = bfs(selectedUnit, units, grid);
-        validMovePositions.forEach(position => {
-            gridColors[posHash(position)] = VALID_MOVE_POSITION_COLOR;
-        });
-    }
-    return gridColors;
+export type GridInfo = {
+    position: { x: number, y: number };
+    unit?: Unit,
+    unitType?: "ally" | "enemy",
+    unitSelected?: boolean,
+    unitLink?: Direction,
+    unitHead?: boolean,
+    showMoveHighlight?: boolean,
+    showAttackHighlight?: boolean,
+    showImmediateMove?: Direction,
 }
 
 const initialGrid = rectGridConstructor(10, 10);
@@ -318,14 +269,14 @@ const deleteDeadPlayers = (state: GameState) => {
     state.players = state.players.filter(player => getUnitsForPlayer(state, player).length > 0);
 }
 
-// Selectors
+// Regular Selectors
 export const selectUnitList = (state: RootState) => getUnitList(state.game);
 export const selectActivePlayerUnits = (state: RootState) => getActivePlayerUnits(state.game);
 export const selectActivePlayer = (state: RootState) => getActivePlayer(state.game);
 export const selectSelectedUnit = (state: RootState) => getSelectedUnit(state.game);
 export const selectEnemyUnits = (state: RootState) => getEnemyUnits(state.game);
 
-export const getGridGlows = createSelector(selectSelectedUnit, state => state.game.phase, selectUnitList, state => state.game.grid, generateGridGlows);
-export const getGridColors = createSelector(selectSelectedUnit, state => state.game.phase, selectUnitList, state => state.game.grid, selectActivePlayer, generateGridColors);
+// Cached Selectors
+export const selectGridInfo = createSelector(selectSelectedUnit, state => state.game.phase, selectUnitList, state => state.game.grid, selectActivePlayer, generateGridInfo);
 
 export default gameSlice.reducer;

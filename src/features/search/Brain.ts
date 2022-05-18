@@ -1,7 +1,8 @@
 import Unit from "../unit/Unit";
-import { Position, posEquals } from "../game/Position";
-import { overlapsAnything } from "../game/gameSlice";
+import { Position, posEquals, posHash, revHash } from "../game/Position";
+import { GridInfo, isSelected, overlapsAnything, Phase, Player } from "../game/gameSlice";
 import { Grid, inGrid } from "../game/Grid";
+import { isIndexSignatureDeclaration } from "typescript";
 
 
 export const head = (unit: Unit) => {
@@ -91,4 +92,57 @@ export const bfs = (mover: Unit, units: Unit[], grid: Grid) => {
     }
   }
   return seenPos;
+}
+
+export const generateGridInfo = (
+  selectedUnit: Unit | undefined,
+  phase: Phase,
+  units: Unit[],
+  grid: Grid,
+  activePlayer: Player
+) => {
+  const gridInfo: { [key: string]: GridInfo } = {};
+  Object.entries(grid).forEach(([key, exists]) => {
+    if (exists) gridInfo[key] = { position: revHash(key) }
+  });
+
+  units.forEach(unit => {
+    const isActivePlayerUnit = activePlayer.unitIds.includes(unit.stats.id);
+    unit.positions.forEach((position, i) => {
+      gridInfo[posHash(position)] = {
+        position,
+        unit: unit,
+        unitType: isActivePlayerUnit ? "ally" : "enemy",
+        unitSelected: isSelected(position, selectedUnit),
+        unitHead: i === 0,
+        unitLink: undefined, // TODO
+        showImmediateMove: undefined, // TODO
+      };
+    });
+    if (selectedUnit && phase === "move") {
+      const validMovePositions = bfs(selectedUnit, units, grid);
+      validMovePositions.forEach(position => {
+        gridInfo[posHash(position)] = {
+          position,
+          showMoveHighlight: true,
+        };
+      });
+    }
+    if (selectedUnit && phase === "attack" && !selectedUnit.attackUsed) {
+      const attackPositions = withinAttackRange(selectedUnit);
+      attackPositions.forEach(position => {
+        const existingGridInfo = gridInfo[posHash(position)];
+        if (existingGridInfo) {
+          existingGridInfo.showAttackHighlight = true;
+        } else {
+          gridInfo[posHash(position)] = {
+            position,
+            showAttackHighlight: true,
+          };
+        }
+      });
+    }
+  });
+
+  return gridInfo;
 }

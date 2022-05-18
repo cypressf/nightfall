@@ -3,7 +3,7 @@ import { useSelector } from "react-redux"
 import { useAppDispatch } from "../../app/hooks";
 import { RootState } from "../../app/store";
 import styles from './Game.module.css';
-import { endTurn, reset, selectSelectedUnit, getGridGlows, getGridColors, selectActivePlayer, Phase, clickAttack, clickMove } from "./gameSlice";
+import { endTurn, reset, selectSelectedUnit, selectActivePlayer, Phase, clickAttack, clickMove, GridInfo, selectGridInfo } from "./gameSlice";
 import { Grid, gridDimensions, positionOfGrid } from "./Grid";
 import { GridCell } from "./GridCell";
 import { posHash } from "./Position";
@@ -11,32 +11,25 @@ import UnitInfo from "./UnitInfo";
 
 const genGrid = (
     grid: Grid,
-    gridGlows: { [key: string]: string | undefined },
-    gridColors: { [key: string]: string | undefined },
+    allGridInfo: { [key: string]: GridInfo },
     phase: Phase,
 ) => [...Array(gridDimensions(grid).height * gridDimensions(grid).width).keys()]
     .map(i => {
         const cellPos = positionOfGrid(i, grid);
-        const glowColor = gridGlows[posHash(cellPos)];
-        const color = gridColors[posHash(cellPos)];
+        const gridInfo = allGridInfo[posHash(cellPos)];
         return <GridCell
             key={i}
-            color={color}
-            glowColor={glowColor}
-            position={cellPos}
+            gridInfo={gridInfo}
             phase={phase} />
     });
 
 export function Game() {
     const dispatch = useAppDispatch();
-    const { grid, phase, selectedUnit, gridGlows, gridColors, activePlayer } =
-        useSelector((state: RootState) => ({
-            ...state.game,
-            selectedUnit: selectSelectedUnit(state),
-            gridGlows: getGridGlows(state),
-            gridColors: getGridColors(state),
-            activePlayer: selectActivePlayer(state),
-        }));
+    const grid = useSelector((state: RootState) => state.game.grid);
+    const phase = useSelector((state: RootState) => state.game.phase);
+    const selectedUnit = useSelector(selectSelectedUnit);
+    const activePlayer = useSelector(selectActivePlayer);
+    const gridInfo = useSelector(selectGridInfo);
     return (
         <React.Fragment>
             {
@@ -72,7 +65,7 @@ export function Game() {
 
             <div id={styles.mapAndInfo}>
                 <div className={styles.wrapper}>
-                    {genGrid(grid, gridGlows, gridColors, phase)}
+                    {genGrid(grid, gridInfo, phase)}
                 </div>
                 {selectedUnit && <UnitInfo unit={selectedUnit} />}
             </div>
