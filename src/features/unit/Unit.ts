@@ -10,8 +10,9 @@ export default interface Unit {
     readonly color: string;
     readonly headColor: string;
     readonly id: string;
-  }
+    readonly icon: string;
+  };
   positions: Position[];
   movesUsed: number;
   attackUsed: boolean;
-};
+}

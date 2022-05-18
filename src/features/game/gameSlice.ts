@@ -53,6 +53,7 @@ const defaultUnits: Unit[] = [
       color: unitColor(0),
       headColor: unitHeadColor(0),
       id: "a",
+      icon: "🐱",
     },
   },
   {
@@ -68,6 +69,7 @@ const defaultUnits: Unit[] = [
       color: unitColor(30),
       headColor: unitHeadColor(30),
       id: "b",
+      icon: "🐶",
     },
   },
   {
@@ -83,6 +85,7 @@ const defaultUnits: Unit[] = [
       color: unitColor(60),
       headColor: unitHeadColor(60),
       id: "c",
+      icon: "🐷",
     },
   },
   {
@@ -102,6 +105,7 @@ const defaultUnits: Unit[] = [
       color: unitColor(500),
       headColor: unitHeadColor(500),
       id: "x",
+      icon: "🥸",
     },
   },
   {
@@ -121,6 +125,7 @@ const defaultUnits: Unit[] = [
       color: unitColor(530),
       headColor: unitHeadColor(530),
       id: "y",
+      icon: "🤡",
     },
   },
   {
@@ -140,6 +145,7 @@ const defaultUnits: Unit[] = [
       color: unitColor(560),
       headColor: unitHeadColor(560),
       id: "z",
+      icon: "🤖",
     },
   },
 ];

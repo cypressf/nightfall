@@ -111,6 +111,7 @@ export const GridCell = ({ gridInfo, phase }: Props) => {
   };
   return (
     <div style={style} onClick={handleClick}>
+      {unitHead && unit && unit.stats.icon}
       {moveIcon}
     </div>
   );
