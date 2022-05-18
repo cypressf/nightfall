@@ -1,4 +1,5 @@
-import { attack, move, select, Phase, GridInfo } from "./gameSlice";
+import { attack, move, select, Phase, GridInfo, selectActivePlayerUnits, selectEnemyUnits } from "./gameSlice";
+import { useSelector } from "react-redux"
 import { useAppDispatch } from "../../app/hooks";
 import * as d3 from "d3-color";
 
@@ -19,6 +20,9 @@ export const GridCell = (
     }: Props
 ) => {
     const dispatch = useAppDispatch();
+
+    const activePlayerUnitIds = useSelector(selectActivePlayerUnits).map((unit)=>unit.stats.id);
+    const enemyPlayerUnitUds = useSelector(selectEnemyUnits).map((unit)=>unit.stats.id);
 
     if (!gridInfo) {
         return <div style={{ transition: "background-color 0.2s" }}></div>
@@ -80,10 +84,23 @@ export const GridCell = (
 
     };
 
+    // A square is clickable if it is a valid attack square, a unit, or a valid movement space.
+    // It should be a cursor if its your unit or a move square
+    // it should be a cross hair if its a targetable enemy unit
+    let cursorStyle ="default";
+    if (showImmediateMove){
+        cursorStyle ="pointer";
+    }else if (unit && activePlayerUnitIds.includes(unit.stats.id)){
+        cursorStyle ="pointer";
+    }else if(showAttackHighlight && unit && enemyPlayerUnitUds.includes(unit.stats.id)){
+        cursorStyle="crosshair";
+    }
+
     const style = {
         backgroundColor: color,
         boxShadow: glowColor ? "0px 0px 10px" + glowColor : undefined,
         transition: "background-color 0.2s",
+        cursor: cursorStyle,
     };
     return <div
         style={style}
