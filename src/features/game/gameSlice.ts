@@ -39,7 +39,7 @@ export interface GameState {
   players: Player[];
 }
 
-const defaultUnits2: Unit[] = [
+const defaultUnits: Unit[] = [
   {
     positions: [{ x: 0, y: 0 }],
     movesUsed: 0,
@@ -174,7 +174,7 @@ export type GridInfo = {
 const initialGrid = rectGridConstructor(10, 10);
 initialGrid["6-6"] = false;
 initialGrid["6-5"] = false;
-const initialUnits = defaultUnits2.reduce(
+const initialUnits = defaultUnits.reduce(
   (map: { [key: string]: Unit }, unit) => {
     map[unit.stats.id] = unit;
     return map;
