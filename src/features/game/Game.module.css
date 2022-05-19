@@ -1,45 +1,45 @@
 body {
-  padding: 1em;
+    padding: 1em;
 }
 
 .wrapper {
-  display: grid;
-  grid: repeat(10, 60px) / auto-flow 60px;
+    display: grid;
+    grid: repeat(10, 60px) / auto-flow 60px;
 }
 
 .wrapper > div {
-  width: 50px;
-  height: 50px;
-  text-align: center;
-  line-height: 50px;
-  font-size: 30px;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    line-height: 50px;
+    font-size: 30px;
 }
 .wrapper > div.selected {
-  box-shadow: 0px 0px 10px rgb(200, 206, 255);
+    box-shadow: 0px 0px 10px rgb(200, 206, 255);
 }
 
 .unitInfo {
-  border: 1px solid rgb(229, 231, 247);
-  border-radius: 5px;
-  padding: 1em;
+    border: 1px solid rgb(229, 231, 247);
+    border-radius: 5px;
+    padding: 1em;
 }
 
 .unitInfo h4 {
-  padding: 0;
-  margin: 0.5em 0 0 0;
+    padding: 0;
+    margin: 0.5em 0 0 0;
 }
 
 .unitInfo th {
-  text-align: left;
-  padding-right: 1em;
+    text-align: left;
+    padding-right: 1em;
 }
 
 #mapAndInfo {
-  display: flex;
+    display: flex;
 }
 
 .button {
-  font-size: 1em;
-  margin: 0.5em;
-  display: inline;
+    font-size: 1em;
+    margin: 0.5em;
+    display: inline;
 }
