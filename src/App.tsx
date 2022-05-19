@@ -1,5 +1,5 @@
-import './App.css';
-import { Game } from './features/game/Game';
+import "./App.css";
+import { Game } from "./features/game/Game";
 
 function App() {
   return <Game />;
