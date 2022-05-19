@@ -1,7 +1,7 @@
-import Unit from "../unit/Unit";
-import styles from './Game.module.css';
+import Unit from '../unit/Unit'
+import styles from './Game.module.css'
 
-const UnitInfo = ({ unit }: { unit: Unit }) =>
+const UnitInfo = ({ unit }: { unit: Unit }) => (
     <div className={styles.unitInfo}>
         <h2 style={{ color: unit.stats.headColor }}>{unit.stats.name}</h2>
         <table>
@@ -23,8 +23,8 @@ const UnitInfo = ({ unit }: { unit: Unit }) =>
                     <td>{unit.stats.attack}</td>
                 </tr>
             </tbody>
-        </table >
-    </div>;
+        </table>
+    </div>
+)
 
-
-export default UnitInfo;
+export default UnitInfo
