@@ -1,0 +1,34 @@
+.cell {
+    position: relative;
+    transition: 'background-color 0.2s';
+}
+
+.link {
+    position:absolute;
+    width:10px;
+    height:10px;
+}
+
+.left {
+    height:50px;
+    left:-10px;
+    top:0;
+}
+
+.right {
+    height:50px;
+    right:-10px;
+    top:0;
+}
+
+.up {
+    width:50px;
+    top:-10px;
+    left:0;
+}
+
+.down {
+    width:50px;
+    bottom:-10px;
+    left:0;
+}

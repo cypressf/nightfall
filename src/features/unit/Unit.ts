@@ -8,7 +8,6 @@ export default interface Unit {
         readonly attack: number
         readonly name: string
         readonly color: string
-        readonly headColor: string
         readonly id: string
         readonly icon: string
     }

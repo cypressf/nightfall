@@ -3,7 +3,7 @@ import styles from './Game.module.css'
 
 const UnitInfo = ({ unit }: { unit: Unit }) => (
     <div className={styles.unitInfo}>
-        <h2 style={{ color: unit.stats.headColor }}>{unit.stats.name}</h2>
+        <h2 style={{ color: unit.stats.color }}>{unit.stats.name}</h2>
         <table>
             <tbody>
                 <tr>
