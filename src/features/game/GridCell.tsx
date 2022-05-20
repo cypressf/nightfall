@@ -1,4 +1,4 @@
-import { attack, move, select, Phase, GridInfo } from './gameSlice'
+import { attack, move, select, hoverUnit, Phase, GridInfo } from './gameSlice'
 import { useAppDispatch } from '../../app/hooks'
 import * as d3 from 'd3-color'
 
@@ -91,6 +91,17 @@ export const GridCell = ({ gridInfo, phase }: Props) => {
         }
     }
 
+    const handleMouseEnter = ()=>{
+        if (unit && unitType ==="enemy"){
+            dispatch(hoverUnit(position));
+        }
+    }
+
+    //TODO: Hmm, can I be assured that the mouseLeave fires before the mouseEnter of a neighboring square?
+    const handleMouseLeave = ()=>{
+        dispatch(hoverUnit(undefined));
+    }
+
     // A square is clickable if it is a valid attack square, a unit, or a valid movement space.
     // It should be a cursor if its your unit or a move square
     // it should be a cross hair if its a targetable enemy unit
@@ -110,7 +121,7 @@ export const GridCell = ({ gridInfo, phase }: Props) => {
         cursor: cursorStyle,
     }
     return (
-        <div style={style} onClick={handleClick}>
+        <div style={style} onClick={handleClick} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
             {unitHead && unit && unit.stats.icon}
             {moveIcon}
         </div>
