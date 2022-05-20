@@ -15,6 +15,7 @@ import {
     selectGridInfo,
     aiTurn,
     selectActivePlayerUnits,
+    selectHoveredUnit,
 } from './gameSlice'
 import { Grid, gridDimensions, positionOfGrid } from './Grid'
 import { GridCell } from './GridCell'
@@ -33,6 +34,7 @@ export function Game() {
     const grid = useSelector((state: RootState) => state.game.grid)
     const phase = useSelector((state: RootState) => state.game.phase)
     const selectedUnit = useSelector(selectSelectedUnit)
+    const hoveredUnit = useSelector(selectHoveredUnit)
     const activePlayer = useSelector(selectActivePlayer)
     const gridInfo = useSelector(selectGridInfo)
     return (
@@ -73,7 +75,8 @@ export function Game() {
 
             <div id={styles.mapAndInfo}>
                 <div className={styles.wrapper}>{genGrid(grid, gridInfo, phase)}</div>
-                {selectedUnit && <UnitInfo unit={selectedUnit} />}
+                {selectedUnit && <UnitInfo unit={selectedUnit} header={"Selected"} />}
+                {hoveredUnit && <UnitInfo unit={hoveredUnit} header={"Info"} />}
             </div>
             <button onClick={() => dispatch(reset())}>reset</button>
         </React.Fragment>

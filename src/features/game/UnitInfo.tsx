@@ -1,9 +1,14 @@
 import Unit from '../unit/Unit'
 import styles from './Game.module.css'
 
-const UnitInfo = ({ unit }: { unit: Unit }) => (
+type Props = {
+    unit : Unit,
+    header: string, 
+}
+
+const UnitInfo = ({ unit, header }: Props) => (
     <div className={styles.unitInfo}>
-        <h2 style={{ color: unit.stats.headColor }}>{unit.stats.name}</h2>
+        <h2 style={{ color: unit.stats.headColor }}>{`${header} : ${unit.stats.name}`}</h2>
         <table>
             <tbody>
                 <tr>

@@ -5,6 +5,7 @@ import { generateGridInfo, targetInRange, aiSubTurn } from '../search/Brain'
 import { Grid, inGrid, rectGridConstructor } from './Grid'
 import * as d3 from 'd3-color'
 import { RootState } from '../../app/store'
+import { stat } from 'fs'
 
 const UNIT_LIGHTNESS = 0.6 // 0 to 1
 const UNIT_SATURATION = 1 // 0 to 2
@@ -31,6 +32,7 @@ export interface GameState {
     turn: number
     units: { [key: string]: Unit }
     selectedUnit?: string
+    hoveredUnit?: string
     grid: Grid
     winner?: string
     phase: Phase
@@ -255,6 +257,18 @@ const moveAction = (state: GameState, action: PayloadAction<Position>) => {
     }
 }
 
+const hoverAction = (state: GameState, action: PayloadAction<Position|undefined>) =>{
+    const enemyUnits = getEnemyUnits(state);
+    if (action.payload){
+        const hoveredUnit = unitAt(action.payload, enemyUnits);
+        if (hoveredUnit){
+            state.hoveredUnit = hoveredUnit.stats.id;
+        }
+    }else{
+        state.hoveredUnit=undefined;
+    }
+}
+
 const selectAction = (state: GameState, action: PayloadAction<Position>) => {
     const activeUnits = getActivePlayerUnits(state)
     const selectedUnit = unitAt(action.payload, activeUnits)
@@ -321,6 +335,7 @@ export const gameSlice = createSlice({
         },
         move: moveAction,
         select: selectAction,
+        hoverUnit:hoverAction,
         reset: () => {
             return initialState
         },
@@ -341,7 +356,7 @@ export const gameSlice = createSlice({
     },
 })
 
-export const { aiTurn, move, select, attack, reset, endTurn, clickMove, clickAttack } =
+export const { aiTurn, move, select, hoverUnit, attack, reset, endTurn, clickMove, clickAttack } =
     gameSlice.actions
 
 // Getters
@@ -350,6 +365,7 @@ const getActivePlayerUnits = (state: GameState) => getUnitsForPlayer(state, getA
 const getUnitsForPlayer = (state: GameState, player: Player) =>
     player.unitIds.map((unitId) => state.units[unitId]).filter((unit) => unit !== undefined)
 const getActivePlayer = (state: GameState) => state.players[state.turn % state.players.length]
+const getHoveredUnit = (state: GameState) => state.hoveredUnit ? state.units[state.hoveredUnit] : undefined; 
 const getSelectedUnit = (state: GameState) =>
     state.selectedUnit ? state.units[state.selectedUnit] : undefined
 const getEnemyUnits = (state: GameState) => {
@@ -370,6 +386,7 @@ export const selectActivePlayerUnits = (state: RootState) => getActivePlayerUnit
 export const selectActivePlayer = (state: RootState) => getActivePlayer(state.game)
 export const selectSelectedUnit = (state: RootState) => getSelectedUnit(state.game)
 export const selectEnemyUnits = (state: RootState) => getEnemyUnits(state.game)
+export const selectHoveredUnit =  (state: RootState) => getHoveredUnit(state.game)
 
 // Cached Selectors
 export const selectGridInfo = createSelector(
