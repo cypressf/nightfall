@@ -1,10 +1,10 @@
-import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import Unit from '../unit/Unit'
-import { Position } from './Position'
+import { createSelector, createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import type Unit from '../unit/Unit'
+import { type Position } from './Position'
 import { generateGridInfo, targetInRange, aiSubTurn } from '../search/Brain'
-import { Grid, inGrid, rectGridConstructor } from './Grid'
+import { type Grid, inGrid, rectGridConstructor } from './Grid'
 import * as d3 from 'd3-color'
-import { RootState } from '../../app/store'
+import { type RootState } from '../../app/store'
 
 const UNIT_LIGHTNESS = 0.6 // 0 to 1
 const UNIT_SATURATION = 1 // 0 to 2

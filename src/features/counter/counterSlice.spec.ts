@@ -1,5 +1,5 @@
 import counterReducer, {
-    CounterState,
+    type CounterState,
     increment,
     decrement,
     incrementByAmount,

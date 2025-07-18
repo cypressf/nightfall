@@ -1,4 +1,4 @@
-import { Position, revHash } from './Position'
+import { type Position, revHash } from './Position'
 import { posHash } from './Position'
 
 export type Grid = {

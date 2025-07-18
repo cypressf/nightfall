@@ -1,4 +1,4 @@
-import Unit from '../unit/Unit'
+import type Unit from '../unit/Unit'
 import styles from './Game.module.css'
 
 const UnitInfo = ({ unit }: { unit: Unit }) => (

@@ -1,15 +1,15 @@
-import Unit from '../unit/Unit'
-import { Position, posEquals, posHash, revHash } from '../game/Position'
+import type Unit from '../unit/Unit'
+import { type Position, posEquals, posHash, revHash } from '../game/Position'
 import {
-    GridInfo,
+    type GridInfo,
     isSelected,
-    GameState,
+    type GameState,
     overlapsAnything,
-    Phase,
-    Player,
+    type Phase,
+    type Player,
     select,
 } from '../game/gameSlice'
-import { Grid, inGrid } from '../game/Grid'
+import { type Grid, inGrid } from '../game/Grid'
 
 export const head = (unit: Unit) => {
     return unit.positions[unit.positions.length - 1]

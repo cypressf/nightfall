@@ -5,33 +5,41 @@
     "private": true,
     "dependencies": {
         "@reduxjs/toolkit": "^1.5.1",
+        "d3-color": "^3.0.1",
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2",
+        "react-redux": "^7.2.0"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.31.0",
         "@testing-library/jest-dom": "^4.2.4",
         "@testing-library/react": "^9.3.2",
         "@testing-library/user-event": "^7.1.2",
+        "@types/d3-color": "^3.0.2",
         "@types/jest": "^24.0.0",
-        "@types/node": "^12.0.0",
         "@types/react": "^16.9.0",
         "@types/react-dom": "^16.9.0",
         "@types/react-redux": "^7.1.7",
-        "d3-color": "^3.0.1",
+        "@vitejs/plugin-react": "^4.6.0",
+        "eslint": "^9.31.0",
+        "eslint-plugin-react-hooks": "^5.2.0",
+        "eslint-plugin-react-refresh": "^0.4.20",
+        "gh-pages": "^3.2.3",
+        "globals": "^16.3.0",
         "husky": "^8.0.1",
         "lint-staged": "^12.4.1",
-        "react": "^17.0.2",
-        "react-dom": "^17.0.2",
-        "react-redux": "^7.2.0",
-        "react-scripts": "4.0.3",
-        "typescript": "~4.1.5"
+        "prettier": "2.6.2",
+        "typescript": "~5.8.3",
+        "typescript-eslint": "^8.37.0",
+        "vite": "^7.0.4"
     },
     "scripts": {
-        "start": "react-scripts start",
-        "build": "react-scripts build",
-        "test": "react-scripts test",
-        "eject": "react-scripts eject",
+        "dev": "vite",
+        "build": "tsc -b && vite build",
+        "lint": "eslint .",
+        "preview": "vite preview",
         "predeploy": "yarn run build",
         "deploy": "gh-pages -d build"
-    },
-    "eslintConfig": {
-        "extends": "react-app"
     },
     "browserslist": {
         "production": [
@@ -45,11 +53,6 @@
             "last 1 safari version"
         ]
     },
-    "devDependencies": {
-        "@types/d3-color": "^3.0.2",
-        "gh-pages": "^3.2.3",
-        "prettier": "2.6.2"
-    },
     "husky": {
         "hooks": {
             "pre-commit": "lint-staged"
@@ -59,5 +62,6 @@
         "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
             "prettier --write"
         ]
-    }
+    },
+    "packageManager": "yarn@3.6.1+sha512.de524adec81a6c3d7a26d936d439d2832e351cdfc5728f9d91f3fc85dd20b04391c038e9b4ecab11cae2b0dd9f0d55fd355af766bc5c1a7f8d25d96bb2a0b2ca"
 }

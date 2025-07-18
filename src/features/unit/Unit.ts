@@ -1,4 +1,4 @@
-import { Position } from '../game/Position'
+import { type Position } from '../game/Position'
 
 export default interface Unit {
     readonly stats: {

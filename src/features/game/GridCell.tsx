@@ -1,4 +1,4 @@
-import { attack, move, select, Phase, GridInfo } from './gameSlice'
+import { attack, move, select, type Phase, type GridInfo } from './gameSlice'
 import { useAppDispatch } from '../../app/hooks'
 import * as d3 from 'd3-color'
 
