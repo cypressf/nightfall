@@ -12,3 +12,9 @@ yarn dev
 ```
 yarn build
 ```
+
+# To deploy
+
+```
+yarn deploy
+```
