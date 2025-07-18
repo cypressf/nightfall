@@ -14,7 +14,6 @@ import {
     type GridInfo,
     selectGridInfo,
     aiTurn,
-    selectActivePlayerUnits,
 } from './gameSlice'
 import { type Grid, gridDimensions, positionOfGrid } from './Grid'
 import { GridCell } from './GridCell'

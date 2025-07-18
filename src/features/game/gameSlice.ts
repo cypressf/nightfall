@@ -303,7 +303,7 @@ export const gameSlice = createSlice({
     name: 'game',
     initialState,
     reducers: {
-        aiTurn: (state: GameState, action: PayloadAction<Player>) => {
+        aiTurn: (state: GameState, _: PayloadAction<Player>) => {
             const activeUnits = getActivePlayerUnits(state)
             const enemyUnits = getEnemyUnits(state)
             const units = getUnitList(state)

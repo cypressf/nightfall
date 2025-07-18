@@ -24,7 +24,6 @@ export const GridCell = ({ gridInfo, phase }: Props) => {
         unitType,
         unitSelected,
         unitHead,
-        unitLink,
         showMoveHighlight,
         showAttackHighlight,
         showImmediateMove,

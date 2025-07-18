@@ -7,7 +7,6 @@ import {
     overlapsAnything,
     type Phase,
     type Player,
-    select,
 } from '../game/gameSlice'
 import { type Grid, inGrid } from '../game/Grid'
 
@@ -263,7 +262,7 @@ export const generateGridInfo = (
 
     units.forEach((unit) => {
         const isActivePlayerUnit = activePlayer.unitIds.includes(unit.stats.id)
-        unit.positions.forEach((position, i) => {
+        unit.positions.forEach((position) => {
             gridInfo[posHash(position)] = {
                 position,
                 unit: unit,
