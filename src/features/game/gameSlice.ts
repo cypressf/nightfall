@@ -13,10 +13,6 @@ const unitColor = (hue: number) => {
     return d3.cubehelix(hue, UNIT_SATURATION, UNIT_LIGHTNESS).toString()
 }
 
-const unitHeadColor = (hue: number) => {
-    return d3.cubehelix(hue, UNIT_SATURATION + 0.2, UNIT_LIGHTNESS - 0.3).toString()
-}
-
 export type PlayerType = 'human' | 'ai'
 
 export type Player = {
@@ -49,7 +45,6 @@ const defaultUnits: Unit[] = [
             movement: 2,
             attack: 1,
             color: unitColor(0),
-            headColor: unitHeadColor(0),
             id: 'a',
             icon: '🐱',
         },
@@ -65,7 +60,6 @@ const defaultUnits: Unit[] = [
             movement: 2,
             attack: 1,
             color: unitColor(30),
-            headColor: unitHeadColor(30),
             id: 'b',
             icon: '🐶',
         },
@@ -81,7 +75,6 @@ const defaultUnits: Unit[] = [
             movement: 2,
             attack: 1,
             color: unitColor(60),
-            headColor: unitHeadColor(60),
             id: 'c',
             icon: '🐷',
         },
@@ -101,7 +94,6 @@ const defaultUnits: Unit[] = [
             movement: 1,
             attack: 1,
             color: unitColor(500),
-            headColor: unitHeadColor(500),
             id: 'x',
             icon: '🥸',
         },
@@ -121,7 +113,6 @@ const defaultUnits: Unit[] = [
             movement: 1,
             attack: 1,
             color: unitColor(530),
-            headColor: unitHeadColor(530),
             id: 'y',
             icon: '🤡',
         },
@@ -141,7 +132,6 @@ const defaultUnits: Unit[] = [
             movement: 1,
             attack: 1,
             color: unitColor(560),
-            headColor: unitHeadColor(560),
             id: 'z',
             icon: '🤖',
         },

@@ -1,6 +1,7 @@
 import { attack, move, select, type Phase, type GridInfo } from './gameSlice'
 import { useAppDispatch } from '../../app/hooks'
 import * as d3 from 'd3-color'
+import styles from './GridCell.module.css'
 
 const SELECTED_COLOR = '#384bfa'
 const VALID_MOVE_POSITION_COLOR = 'rgb(201, 230, 253)'
@@ -24,6 +25,7 @@ export const GridCell = ({ gridInfo, phase }: Props) => {
         unitType,
         unitSelected,
         unitHead,
+        unitLink,
         showMoveHighlight,
         showAttackHighlight,
         showImmediateMove,
@@ -31,17 +33,11 @@ export const GridCell = ({ gridInfo, phase }: Props) => {
     let color: string
     let glowColor: string | undefined = undefined
     if (unit) {
-        const modifiableColor = unitHead
-            ? d3.cubehelix(unit.stats.headColor)!
-            : d3.cubehelix(unit.stats.color)!
+        const modifiableColor = d3.cubehelix(unit.stats.color)
 
         if (unitType === 'enemy') {
-            if (unitHead) {
-                modifiableColor.s *= 0.2
-                modifiableColor.l *= 1.5
-            } else {
-                modifiableColor.s *= 0.2
-            }
+            modifiableColor.s *= 0.2
+            modifiableColor.l *= 1.3
         }
         color = modifiableColor.toString()
         if (unitSelected) {
@@ -102,16 +98,30 @@ export const GridCell = ({ gridInfo, phase }: Props) => {
         cursorStyle = 'crosshair'
     }
 
+    const unitLinkClass = unitLink
+        ? {
+              left: styles.left,
+              right: styles.right,
+              up: styles.up,
+              down: styles.down,
+          }[unitLink]
+        : undefined
+
     const style = {
         backgroundColor: color,
         boxShadow: glowColor ? '0px 0px 10px' + glowColor : undefined,
-        transition: 'background-color 0.2s',
         cursor: cursorStyle,
     }
     return (
-        <div style={style} onClick={handleClick}>
+        <div style={style} onClick={handleClick} className={styles.cell}>
             {unitHead && unit && unit.stats.icon}
             {moveIcon}
+            {unitLink && (
+                <div
+                    className={unitLinkClass + ' ' + styles.link}
+                    style={{ backgroundColor: color }}
+                ></div>
+            )}
         </div>
     )
 }
