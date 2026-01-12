@@ -7,6 +7,7 @@ import {
     overlapsAnything,
     type Phase,
     type Player,
+    type Direction,
 } from '../game/gameSlice'
 import { type Grid, inGrid } from '../game/Grid'
 
@@ -73,6 +74,20 @@ const positionsWithinRange = (position: Position, distance: number) => {
         }
     }
     return toReturn
+}
+
+const getDirection = (pos1: Position, pos2: Position): Direction | undefined => {
+    if (pos1.x > pos2.x) {
+        return 'right'
+    } else if (pos1.x < pos2.x) {
+        return 'left'
+    } else if (pos1.y > pos2.y) {
+        return 'down'
+    } else if (pos1.y < pos2.y) {
+        return 'up'
+    } else {
+        return undefined
+    }
 }
 
 const adjacent = (position: Position) => positionsWithinRange(position, 1)
@@ -262,15 +277,15 @@ export const generateGridInfo = (
 
     units.forEach((unit) => {
         const isActivePlayerUnit = activePlayer.unitIds.includes(unit.stats.id)
-        unit.positions.forEach((position) => {
+        unit.positions.forEach((position, i) => {
+            const previous = unit.positions[i - 1]
             gridInfo[posHash(position)] = {
                 position,
                 unit: unit,
                 unitType: isActivePlayerUnit ? 'ally' : 'enemy',
                 unitSelected: isSelected(position, selectedUnit),
                 unitHead: posEquals(head(unit), position),
-                unitLink: undefined, // TODO
-                showImmediateMove: undefined, // TODO
+                unitLink: previous ? getDirection(previous, position) : undefined,
             }
         })
         if (selectedUnit && phase === 'move') {
@@ -289,15 +304,7 @@ export const generateGridInfo = (
                 grid
             )
             immediateMoves.forEach((position) => {
-                if (position.x > unitHead.x) {
-                    gridInfo[posHash(position)].showImmediateMove = 'right'
-                } else if (position.x < unitHead.x) {
-                    gridInfo[posHash(position)].showImmediateMove = 'left'
-                } else if (position.y > unitHead.y) {
-                    gridInfo[posHash(position)].showImmediateMove = 'down'
-                } else if (position.y < unitHead.y) {
-                    gridInfo[posHash(position)].showImmediateMove = 'up'
-                }
+                gridInfo[posHash(position)].showImmediateMove = getDirection(position, unitHead)
             })
         }
         if (selectedUnit && phase === 'attack' && !selectedUnit.attackUsed) {
